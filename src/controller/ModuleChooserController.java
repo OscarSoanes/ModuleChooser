@@ -6,9 +6,7 @@ import model.Course;
 import model.Schedule;
 import model.Module;
 import model.StudentProfile;
-import view.ModuleChooserRootPane;
-import view.CreateStudentProfilePane;
-import view.ModuleChooserMenuBar;
+import view.*;
 
 public class ModuleChooserController {
 
@@ -18,6 +16,11 @@ public class ModuleChooserController {
 	
 	private CreateStudentProfilePane cspp;
 	private ModuleChooserMenuBar mstmb;
+	private SelectModulesPane smp;
+	private ReserveModulesPane rmp;
+	private ReserveModulesTerm1Pane rmpt1;
+	private ReserveModulesTerm2Pane rmpt2;
+
 
 	public ModuleChooserController(ModuleChooserRootPane view, StudentProfile model) {
 		//initialise view and model fields
@@ -27,6 +30,10 @@ public class ModuleChooserController {
 		//initialise view subcontainer fields
 		cspp = view.getCreateStudentProfilePane();
 		mstmb = view.getModuleSelectionToolMenuBar();
+		smp = view.getSelectModulesPane();
+		rmp = view.getReserveModulesPane();
+		rmpt1 = view.getReserveModulesPane().getReserveModulesTerm1Pane();
+		rmpt2 = view.getReserveModulesPane().getReserveModulesTerm2Pane();
 
 		//add courses to combobox in create student profile pane using the generateAndGetCourses helper method below
 		cspp.addCoursesToComboBox(generateAndGetCourses());
@@ -40,7 +47,10 @@ public class ModuleChooserController {
 	private void attachEventHandlers() {
 		//attach an event handler to the create student profile pane
 		cspp.addCreateStudentProfileHandler(new CreateStudentProfileHandler());
-		
+
+		// event handler to change pane in reserve modules pane
+		rmpt1.confirmBtnHandler(e -> rmp.changePane());
+
 		//attach an event handler to the menu bar that closes the application
 		mstmb.addExitHandler(e -> System.exit(0));
 	}
