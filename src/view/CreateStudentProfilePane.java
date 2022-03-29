@@ -121,9 +121,10 @@ public class CreateStudentProfilePane extends GridPane {
 	}
 
 	public BooleanBinding isCreateStudentEmpty() {
-		return txtPnumber.textProperty().isEmpty().or(txtFirstName.textProperty().isEmpty()
-				.or(txtSurname.textProperty().isEmpty().or(txtEmail.textProperty().isEmpty()
-						.or(inputDate.valueProperty().isNull()))));
+		return txtPnumber.textProperty().isNotEmpty();
+//		return txtPnumber.textProperty().isEmpty().or(txtFirstName.textProperty().isEmpty()
+//				.or(txtSurname.textProperty().isEmpty().or(txtEmail.textProperty().isEmpty()
+//						.or(inputDate.valueProperty().isNull()))));
 	}
 
 }

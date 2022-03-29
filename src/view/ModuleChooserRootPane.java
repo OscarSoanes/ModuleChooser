@@ -57,7 +57,7 @@ public class ModuleChooserRootPane extends BorderPane {
 		return rmp;
 	}
 
-	private OverviewSelectionPane getOverviewSelectionPane() {
+	public OverviewSelectionPane getOverviewSelectionPane() {
 		return ovsp;
 	}
 	

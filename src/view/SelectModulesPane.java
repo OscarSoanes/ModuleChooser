@@ -1,26 +1,13 @@
 package view;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
-import model.Module;
-
-import javafx.event.EventHandler;
 
 public class SelectModulesPane extends GridPane {
-    private final ListView<Module> lstUnselectedTerm1, lstUnSelectedTerm2, lstYearLong, lstSelectedTerm1, lstSelectedTerm2;
-    private final Button btnTerm1Add, btnTerm1Remove, btnTerm2Add, btnTerm2Remove, btnReset, btnSubmit;
-    private final TextField txtTerm1Credits, txtTerm2Credits;
 
-    private final VBox unselectedPane, selectedPane;
-    private final HBox term1BtnPane, term2BtnPane, term1CreditsPane, term2CreditsPane, resetBtnPane, submitBtnPane;
+    private SelectModulesUnselectedVBox smuVBox;
+    private SelectModulesSelectedVBox smsVBox;
 
     public SelectModulesPane() {
         // Styling
@@ -35,157 +22,25 @@ public class SelectModulesPane extends GridPane {
         selectedColumn.setPercentWidth(50);
         this.getColumnConstraints().addAll(unselectedColumn, selectedColumn);
 
-        // Create labels
-        Label lblUnselectedTerm1 = new Label("Unselected Term 1 modules");
-        Label lblUnselectedTerm2 = new Label("Unselected Term 2 modules");
-        Label lblSelectedYear = new Label("Selected Year Long modules");
-        Label lblSelectedTerm1 = new Label("Selected Term 1 modules");
-        Label lblSelectedTerm2 = new Label("Selected Term 2 modules");
-        Label lblTerm1 = new Label("Term 1");
-        Label lblTerm2 = new Label("Term 2");
-        Label lblTerm1Credits = new Label("Term 1 credits");
-        Label lblTerm2Credits = new Label("Term 2 credits");
-
-        // Creating listViews
-        lstUnselectedTerm1 = new ListView<>();
-        lstUnSelectedTerm2 = new ListView<>();
-        lstYearLong = new ListView<>();
-        lstSelectedTerm1 = new ListView<>();
-        lstSelectedTerm2 = new ListView<>();
-
-        // Creating textfields
-        txtTerm1Credits = new TextField("0");
-        txtTerm2Credits = new TextField("0");
-
-        // Creating buttons
-        btnTerm1Add = new Button("Add");
-        btnTerm1Remove = new Button("Remove");
-        btnTerm2Add = new Button("Add");
-        btnTerm2Remove = new Button("Remove");
-        btnSubmit = new Button("Submit");
-        btnReset = new Button("Reset");
-
-        // Label padding for the "selected" pane
-        lblSelectedTerm1.setPadding(new Insets(10, 0, 0, 0));
-        lblSelectedTerm2.setPadding(new Insets(10, 0, 0, 0));
-
-        // Styling buttons
-        btnTerm1Add.setPrefWidth(70);
-        btnTerm1Remove.setPrefWidth(70);
-        btnTerm2Add.setPrefWidth(70);
-        btnTerm2Remove.setPrefWidth(70);
-        btnSubmit.setPrefWidth(70);
-        btnReset.setPrefWidth(70);
-
-        // Styling reset and submit buttons
-        resetBtnPane = new HBox(btnReset);
-        submitBtnPane = new HBox(btnSubmit);
-
-        resetBtnPane.setAlignment(Pos.TOP_RIGHT);
-        resetBtnPane.setPadding(new Insets(10));
-
-        submitBtnPane.setAlignment(Pos.TOP_LEFT);
-        submitBtnPane.setPadding(new Insets(10));
-
-        // Creating HBoxes for button panes
-        term1BtnPane = new HBox(lblTerm1, btnTerm1Add, btnTerm1Remove);
-        term2BtnPane = new HBox(lblTerm2, btnTerm2Add, btnTerm2Remove);
-
-        // Styling button panes
-        term1BtnPane.setPadding(new Insets(10));
-        term1BtnPane.setAlignment(Pos.CENTER);
-        term1BtnPane.setSpacing(10);
-
-        term2BtnPane.setPadding(new Insets(10));
-        term2BtnPane.setAlignment(Pos.CENTER);
-        term2BtnPane.setSpacing(10);
-
-        // Styling text fields for credits
-        txtTerm1Credits.setPrefWidth(50);
-        txtTerm2Credits.setPrefWidth(50);
-
-        // Creating HBoxes for credit panes
-        term1CreditsPane = new HBox(lblTerm1Credits, txtTerm1Credits);
-        term2CreditsPane = new HBox(lblTerm2Credits, txtTerm2Credits);
-
-        // Styling credit panes
-        term1CreditsPane.setPadding(new Insets(10));
-        term1CreditsPane.setAlignment(Pos.CENTER);
-        term1CreditsPane.setSpacing(10);
-
-        term2CreditsPane.setPadding(new Insets(10));
-        term2CreditsPane.setAlignment(Pos.CENTER);
-        term2CreditsPane.setSpacing(10);
-
-        // Styling for listview year long
-        lstYearLong.setMinHeight(50);
-        lstYearLong.setMaxHeight(50);
-
-        // Applying content into VBox pane
-        unselectedPane = new VBox(
-                lblUnselectedTerm1, lstUnselectedTerm1, term1BtnPane,
-                lblUnselectedTerm2, lstUnSelectedTerm2, term2BtnPane,
-                term1CreditsPane, resetBtnPane);
-
-        selectedPane = new VBox(
-                lblSelectedYear, lstYearLong,
-                lblSelectedTerm1, lstSelectedTerm1,
-                lblSelectedTerm2, lstSelectedTerm2,
-                term2CreditsPane, submitBtnPane);
-
+        smuVBox = new SelectModulesUnselectedVBox();
+        smsVBox = new SelectModulesSelectedVBox();
 
         // add panes to container
-        this.add(unselectedPane, 0, 0);
-        this.add(selectedPane, 1, 0);
+        this.add(smuVBox, 0, 0);
+        this.add(smsVBox, 1, 0);
     }
 
-    // methods
-    public void addModuleTerm1ToList(Module module) {
-        lstUnselectedTerm1.getItems().add(module);
+    public SelectModulesSelectedVBox getSelectedModulesVBox() {
+        return smsVBox;
     }
 
-    public void addModuleTerm2ToList(Module module) {
-        lstUnSelectedTerm2.getItems().add(module);
-    }
-
-    public void addYearLongModuleToList(Module module) {
-        lstYearLong.getItems().clear();
-        lstYearLong.getItems().add(module);
-    }
-
-    public void addSelectedModuleTerm1(Module module) {
-        lstSelectedTerm1.getItems().add(module);
-    }
-
-    public void addSelectedModuleTerm2(Module module) {
-        lstSelectedTerm2.getItems().add(module);
+    public SelectModulesUnselectedVBox getUnselectedModulesVBox() {
+        return smuVBox;
     }
 
     public void clearAll() {
-        lstUnselectedTerm1.getItems().clear();
-        lstUnSelectedTerm2.getItems().clear();
-        lstSelectedTerm1.getItems().clear();
-        lstSelectedTerm2.getItems().clear();
-        lstYearLong.getItems().clear();
+        smsVBox.clearAll();
+        smuVBox.clearAll();
     }
 
-    // event handlers
-    public void addBtnTerm1AddHandler(EventHandler<ActionEvent> handler) {
-        btnTerm1Add.setOnAction(handler);
-    }
-    public void addBtnTerm1RemoveHandler(EventHandler<ActionEvent> handler) {
-        btnTerm1Remove.setOnAction(handler);
-    }
-    public void addBtnTerm2AddHandler(EventHandler<ActionEvent> handler) {
-        btnTerm2Add.setOnAction(handler);
-    }
-    public void addBtnTerm2RemoveHandler(EventHandler<ActionEvent> handler) {
-        btnTerm2Remove.setOnAction(handler);
-    }
-    public void addBtnReset(EventHandler<ActionEvent> handler) {
-        btnReset.setOnAction(handler);
-    }
-    public void addBtnSubmit(EventHandler<ActionEvent> handler) {
-        btnSubmit.setOnAction(handler);
-    }
 }
