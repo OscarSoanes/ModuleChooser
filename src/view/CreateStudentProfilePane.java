@@ -2,6 +2,7 @@ package view;
 
 import java.time.LocalDate;
 
+import javafx.beans.binding.BooleanBinding;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
@@ -44,7 +45,7 @@ public class CreateStudentProfilePane extends GridPane {
 		Label lblDate = new Label("Input date: ");
 		
 		//initialise combobox
-		cboCourses = new ComboBox<Course>(); //this is populated via method towards end of class
+		cboCourses = new ComboBox<>(); //this is populated via method towards end of class
 		
 		//setup text fields
 		txtFirstName = new TextField();
@@ -53,7 +54,8 @@ public class CreateStudentProfilePane extends GridPane {
 		txtEmail = new TextField();
 		
 		inputDate = new DatePicker();
-		
+		inputDate.setEditable(false);
+
 		//initialise create profile button
 		btnCreateProfile = new Button("Create Profile");
 
@@ -111,6 +113,17 @@ public class CreateStudentProfilePane extends GridPane {
 	//method to attach the create student profile button event handler
 	public void addCreateStudentProfileHandler(EventHandler<ActionEvent> handler) {
 		btnCreateProfile.setOnAction(handler);
+	}
+
+	// validation
+	public void disableCreateProfileBtn(BooleanBinding value) {
+		btnCreateProfile.disableProperty().bind(value);
+	}
+
+	public BooleanBinding isCreateStudentEmpty() {
+		return txtPnumber.textProperty().isEmpty().or(txtFirstName.textProperty().isEmpty()
+				.or(txtSurname.textProperty().isEmpty().or(txtEmail.textProperty().isEmpty()
+						.or(inputDate.valueProperty().isNull()))));
 	}
 
 }

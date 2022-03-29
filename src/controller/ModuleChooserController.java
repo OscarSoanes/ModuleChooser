@@ -1,5 +1,6 @@
 package controller;
 
+import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import model.Course;
@@ -11,15 +12,15 @@ import view.*;
 public class ModuleChooserController {
 
 	//fields to be used throughout class
-	private ModuleChooserRootPane view;
-	private StudentProfile model;
+	private final ModuleChooserRootPane view;
+	private final StudentProfile model;
 	
-	private CreateStudentProfilePane cspp;
-	private ModuleChooserMenuBar mstmb;
-	private SelectModulesPane smp;
-	private ReserveModulesPane rmp;
-	private ReserveModulesTerm1Pane rmpt1;
-	private ReserveModulesTerm2Pane rmpt2;
+	private final CreateStudentProfilePane cspp;
+	private final ModuleChooserMenuBar mstmb;
+	private final SelectModulesPane smp;
+	private final ReserveModulesPane rmp;
+	private final ReserveModulesTerm1Pane rmpt1;
+	private final ReserveModulesTerm2Pane rmpt2;
 
 
 	public ModuleChooserController(ModuleChooserRootPane view, StudentProfile model) {
@@ -39,7 +40,8 @@ public class ModuleChooserController {
 		cspp.addCoursesToComboBox(generateAndGetCourses());
 
 		//attach event handlers to view using private helper method
-		this.attachEventHandlers();	
+		this.attachEventHandlers();
+		this.attachBindings();
 	}
 
 	
@@ -54,12 +56,19 @@ public class ModuleChooserController {
 		//attach an event handler to the menu bar that closes the application
 		mstmb.addExitHandler(e -> System.exit(0));
 	}
+
+	public void attachBindings() {
+		cspp.disableCreateProfileBtn(cspp.isCreateStudentEmpty());
+	}
 	
-	//event handler (currently empty), which can be used for creating a profile
+	//event handlers
 	private class CreateStudentProfileHandler implements EventHandler<ActionEvent> {
 		public void handle(ActionEvent e) {
-			
-			
+			model.setStudentCourse(cspp.getSelectedCourse());
+			model.setStudentPnumber(cspp.getStudentPnumber());
+			model.setStudentName(cspp.getStudentName());
+			model.setStudentEmail(cspp.getStudentEmail());
+			model.setSubmissionDate(cspp.getStudentDate());
 		}
 	}
 

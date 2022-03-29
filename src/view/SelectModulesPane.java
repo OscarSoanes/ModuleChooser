@@ -1,5 +1,8 @@
 package view;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -7,6 +10,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
+
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 
 public class SelectModulesPane extends GridPane {
     private final ListView<Module> lstUnselectedTerm1, lstUnSelectedTerm2, lstYearLong, lstSelectedTerm1, lstSelectedTerm2;
@@ -131,7 +137,33 @@ public class SelectModulesPane extends GridPane {
         // add panes to container
         this.add(unselectedPane, 0, 0);
         this.add(selectedPane, 1, 0);
-
-
     }
+
+    // methods
+    public void addModuleTerm1ToList(ObservableList<Module> modules) {
+        lstUnselectedTerm1.getItems().clear();
+        lstUnselectedTerm1.getItems().addAll(modules);
+    }
+
+    // event handlers
+    public void addBtnTerm1AddHandler(EventHandler<ActionEvent> handler) {
+        btnTerm1Add.setOnAction(handler);
+    }
+    public void addBtnTerm1RemoveHandler(EventHandler<ActionEvent> handler) {
+        btnTerm1Remove.setOnAction(handler);
+    }
+    public void addBtnTerm2AddHandler(EventHandler<ActionEvent> handler) {
+        btnTerm2Add.setOnAction(handler);
+    }
+    public void addBtnTerm2RemoveHandler(EventHandler<ActionEvent> handler) {
+        btnTerm2Remove.setOnAction(handler);
+    }
+    public void addBtnReset(EventHandler<ActionEvent> handler) {
+        btnReset.setOnAction(handler);
+    }
+    public void addBtnSubmit(EventHandler<ActionEvent> handler) {
+        btnSubmit.setOnAction(handler);
+    }
+
+
 }
