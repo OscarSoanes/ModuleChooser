@@ -1,6 +1,7 @@
 package controller;
 
 import javafx.beans.binding.Bindings;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import model.Course;
@@ -8,6 +9,11 @@ import model.Schedule;
 import model.Module;
 import model.StudentProfile;
 import view.*;
+
+import java.util.Collection;
+import java.util.stream.Stream;
+
+import static model.Schedule.*;
 
 public class ModuleChooserController {
 
@@ -64,35 +70,54 @@ public class ModuleChooserController {
 	//event handlers
 	private class CreateStudentProfileHandler implements EventHandler<ActionEvent> {
 		public void handle(ActionEvent e) {
+			// Clearing all existing data
+			smp.clearAll();
+
+			// Adding data to model
 			model.setStudentCourse(cspp.getSelectedCourse());
 			model.setStudentPnumber(cspp.getStudentPnumber());
 			model.setStudentName(cspp.getStudentName());
 			model.setStudentEmail(cspp.getStudentEmail());
 			model.setSubmissionDate(cspp.getStudentDate());
+
+			// Pushing modules from model to module chooser pans
+			for (Module module: model.getStudentCourse().getAllModulesOnCourse()) {
+				if (module.getDelivery().equals(TERM_1)) {
+					if (module.isMandatory()) smp.addSelectedModuleTerm1(module);
+					else smp.addModuleTerm1ToList(module);
+				}
+
+				if (module.getDelivery().equals(TERM_2)) {
+					if (module.isMandatory()) smp.addSelectedModuleTerm2(module);
+					else smp.addModuleTerm2ToList(module);
+				}
+
+				if (module.getDelivery().equals(YEAR_LONG)) smp.addYearLongModuleToList(module);
+			}
 		}
 	}
 
 
 	//helper method - generates course and module data and returns courses within an array
 	private Course[] generateAndGetCourses() {
-		Module imat3423 = new Module("IMAT3423", "Systems Building: Methods", 15, true, Schedule.TERM_1);
+		Module imat3423 = new Module("IMAT3423", "Systems Building: Methods", 15, true, TERM_1);
 		Module ctec3451 = new Module("CTEC3451", "Development Project", 30, true, Schedule.YEAR_LONG);
-		Module ctec3902_SoftEng = new Module("CTEC3902", "Rigorous Systems", 15, true, Schedule.TERM_2);	
-		Module ctec3902_CompSci = new Module("CTEC3902", "Rigorous Systems", 15, false, Schedule.TERM_2);
-		Module ctec3110 = new Module("CTEC3110", "Secure Web Application Development", 15, false, Schedule.TERM_1);
-		Module ctec3605 = new Module("CTEC3605", "Multi-service Networks 1", 15, false, Schedule.TERM_1);	
-		Module ctec3606 = new Module("CTEC3606", "Multi-service Networks 2", 15, false, Schedule.TERM_2);	
-		Module ctec3410 = new Module("CTEC3410", "Web Application Penetration Testing", 15, false, Schedule.TERM_2);
-		Module ctec3904 = new Module("CTEC3904", "Functional Software Development", 15, false, Schedule.TERM_2);
-		Module ctec3905 = new Module("CTEC3905", "Front-End Web Development", 15, false, Schedule.TERM_2);
-		Module ctec3906 = new Module("CTEC3906", "Interaction Design", 15, false, Schedule.TERM_1);
-		Module ctec3911 = new Module("CTEC3911", "Mobile Application Development", 15, false, Schedule.TERM_1);
-		Module imat3410 = new Module("IMAT3104", "Database Management and Programming", 15, false, Schedule.TERM_2);
-		Module imat3406 = new Module("IMAT3406", "Fuzzy Logic and Knowledge Based Systems", 15, false, Schedule.TERM_1);
-		Module imat3611 = new Module("IMAT3611", "Computer Ethics and Privacy", 15, false, Schedule.TERM_1);
-		Module imat3613 = new Module("IMAT3613", "Data Mining", 15, false, Schedule.TERM_1);
-		Module imat3614 = new Module("IMAT3614", "Big Data and Business Models", 15, false, Schedule.TERM_2);
-		Module imat3428_CompSci = new Module("IMAT3428", "Information Technology Services Practice", 15, false, Schedule.TERM_2);
+		Module ctec3902_SoftEng = new Module("CTEC3902", "Rigorous Systems", 15, true, TERM_2);
+		Module ctec3902_CompSci = new Module("CTEC3902", "Rigorous Systems", 15, false, TERM_2);
+		Module ctec3110 = new Module("CTEC3110", "Secure Web Application Development", 15, false, TERM_1);
+		Module ctec3605 = new Module("CTEC3605", "Multi-service Networks 1", 15, false, TERM_1);
+		Module ctec3606 = new Module("CTEC3606", "Multi-service Networks 2", 15, false, TERM_2);
+		Module ctec3410 = new Module("CTEC3410", "Web Application Penetration Testing", 15, false, TERM_2);
+		Module ctec3904 = new Module("CTEC3904", "Functional Software Development", 15, false, TERM_2);
+		Module ctec3905 = new Module("CTEC3905", "Front-End Web Development", 15, false, TERM_2);
+		Module ctec3906 = new Module("CTEC3906", "Interaction Design", 15, false, TERM_1);
+		Module ctec3911 = new Module("CTEC3911", "Mobile Application Development", 15, false, TERM_1);
+		Module imat3410 = new Module("IMAT3104", "Database Management and Programming", 15, false, TERM_2);
+		Module imat3406 = new Module("IMAT3406", "Fuzzy Logic and Knowledge Based Systems", 15, false, TERM_1);
+		Module imat3611 = new Module("IMAT3611", "Computer Ethics and Privacy", 15, false, TERM_1);
+		Module imat3613 = new Module("IMAT3613", "Data Mining", 15, false, TERM_1);
+		Module imat3614 = new Module("IMAT3614", "Big Data and Business Models", 15, false, TERM_2);
+		Module imat3428_CompSci = new Module("IMAT3428", "Information Technology Services Practice", 15, false, TERM_2);
 
 
 		Course compSci = new Course("Computer Science");

@@ -10,8 +10,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
+import model.Module;
 
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 
 public class SelectModulesPane extends GridPane {
@@ -140,9 +140,33 @@ public class SelectModulesPane extends GridPane {
     }
 
     // methods
-    public void addModuleTerm1ToList(ObservableList<Module> modules) {
+    public void addModuleTerm1ToList(Module module) {
+        lstUnselectedTerm1.getItems().add(module);
+    }
+
+    public void addModuleTerm2ToList(Module module) {
+        lstUnSelectedTerm2.getItems().add(module);
+    }
+
+    public void addYearLongModuleToList(Module module) {
+        lstYearLong.getItems().clear();
+        lstYearLong.getItems().add(module);
+    }
+
+    public void addSelectedModuleTerm1(Module module) {
+        lstSelectedTerm1.getItems().add(module);
+    }
+
+    public void addSelectedModuleTerm2(Module module) {
+        lstSelectedTerm2.getItems().add(module);
+    }
+
+    public void clearAll() {
         lstUnselectedTerm1.getItems().clear();
-        lstUnselectedTerm1.getItems().addAll(modules);
+        lstUnSelectedTerm2.getItems().clear();
+        lstSelectedTerm1.getItems().clear();
+        lstSelectedTerm2.getItems().clear();
+        lstYearLong.getItems().clear();
     }
 
     // event handlers
@@ -164,6 +188,4 @@ public class SelectModulesPane extends GridPane {
     public void addBtnSubmit(EventHandler<ActionEvent> handler) {
         btnSubmit.setOnAction(handler);
     }
-
-
 }
