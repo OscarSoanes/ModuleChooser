@@ -6,8 +6,8 @@ import javafx.scene.layout.*;
 
 public class SelectModulesPane extends GridPane {
 
-    private SelectModulesUnselectedVBox smuVBox;
-    private SelectModulesSelectedVBox smsVBox;
+    private final SelectModulesUnselectedVBox smuVBox;
+    private final SelectModulesSelectedVBox smsVBox;
 
     public SelectModulesPane() {
         // Styling
@@ -15,7 +15,7 @@ public class SelectModulesPane extends GridPane {
         this.setHgap(20);
         this.setAlignment(Pos.TOP_LEFT);
 
-        // Create two columns in gridpane, making them both 50% width
+        // Create two columns in grid pane, making them both 50% width
         ColumnConstraints unselectedColumn = new ColumnConstraints();
         unselectedColumn.setPercentWidth(50);
         ColumnConstraints selectedColumn = new ColumnConstraints();

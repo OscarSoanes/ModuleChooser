@@ -1,13 +1,9 @@
 package view;
 
-import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.binding.BooleanExpression;
 import javafx.beans.binding.StringExpression;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ObservableBooleanValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -24,12 +20,10 @@ import javafx.scene.layout.VBox;
 import model.Module;
 
 public class SelectModulesSelectedVBox extends VBox {
-    private final ListView<Module> lstYear, lstTerm1, lstTerm2;
-    private ObservableList<Module> yearData, term1Data, term2Data;
+    private final ListView<Module> lstTerm1, lstTerm2;
+    private final ObservableList<Module> yearData, term1Data, term2Data;
     private final Button btnSubmit;
     private final TextField txtCredits;
-
-    private HBox creditsPane, submitPane;
 
     public SelectModulesSelectedVBox() {
         // Creating labels
@@ -43,7 +37,7 @@ public class SelectModulesSelectedVBox extends VBox {
         term2Data = FXCollections.observableArrayList();
 
         // Creating all elements
-        lstYear = new ListView<>(yearData);
+        ListView<Module> lstYear = new ListView<>(yearData);
         lstTerm1 = new ListView<>(term1Data);
         lstTerm2 = new ListView<>(term2Data);
         btnSubmit = new Button("Submit");
@@ -58,13 +52,13 @@ public class SelectModulesSelectedVBox extends VBox {
         lstYear.setMinHeight(50);
         lstYear.setMaxHeight(50);
 
-        // Creating HBoxs and styling
-        creditsPane = new HBox(lblCredits, txtCredits);
+        // Creating HBox's and styling
+        HBox creditsPane = new HBox(lblCredits, txtCredits);
         creditsPane.setPadding(new Insets(10));
         creditsPane.setAlignment(Pos.CENTER);
         creditsPane.setSpacing(10);
 
-        submitPane = new HBox(btnSubmit);
+        HBox submitPane = new HBox(btnSubmit);
         submitPane.setPadding(new Insets(10));
         submitPane.setAlignment(Pos.TOP_LEFT);
 

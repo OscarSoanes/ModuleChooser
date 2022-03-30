@@ -8,12 +8,12 @@ import javafx.scene.layout.BorderPane;
 
 public class ModuleChooserRootPane extends BorderPane {
 
-	private CreateStudentProfilePane cspp;
-	private SelectModulesPane smp;
-	private ModuleChooserMenuBar mstmb;
-	private ReserveModulesPane rmp;
-	private OverviewSelectionPane ovsp;
-	private TabPane tp;
+	private final CreateStudentProfilePane cspp;
+	private final SelectModulesPane smp;
+	private final ModuleChooserMenuBar mstmb;
+	private final ReserveModulesPane rmp;
+	private final OverviewSelectionPane ovsp;
+	private final TabPane tp;
 	
 	public ModuleChooserRootPane() {
 		//create tab pane and disable tabs from being closed

@@ -11,7 +11,7 @@ import javafx.scene.input.KeyCombination;
 
 public class ModuleChooserMenuBar extends MenuBar {
 
-	private MenuItem saveItem, loadItem, aboutItem, exitItem;
+	private final MenuItem saveItem, loadItem, aboutItem, exitItem;
 
 	public ModuleChooserMenuBar() { 
 

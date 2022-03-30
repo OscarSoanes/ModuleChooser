@@ -1,8 +1,6 @@
 package view;
 
 import javafx.beans.binding.*;
-import javafx.beans.value.ObservableStringValue;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -85,6 +83,14 @@ public class SelectModulesUnselectedVBox extends VBox {
     }
 
     // methods
+    public ObservableList<Module> getTerm1Data() {
+        return term1Data;
+    }
+    public ObservableList<Module> getTerm2Data() {
+        return term2Data;
+    }
+
+
     public Module getSelectedTerm1() {
         return lstTerm1.getSelectionModel().getSelectedItem();
     }
@@ -152,9 +158,6 @@ public class SelectModulesUnselectedVBox extends VBox {
     }
     public void disableBtnRemoveTerm2(BooleanBinding value) {
         btnTerm2Remove.disableProperty().bind(value);
-    }
-    public void disableBtnReset(BooleanBinding value) {
-        btnReset.disableProperty().bind(value);
     }
 
     public BooleanBinding isNotSelectedOrFullTerm1() {

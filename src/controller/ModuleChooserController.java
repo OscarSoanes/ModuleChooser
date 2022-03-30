@@ -1,6 +1,5 @@
 package controller;
 
-import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringExpression;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -10,9 +9,6 @@ import model.Schedule;
 import model.Module;
 import model.StudentProfile;
 import view.*;
-
-import java.util.Collection;
-import java.util.stream.Stream;
 
 import static model.Schedule.*;
 
@@ -35,9 +31,9 @@ public class ModuleChooserController {
 
 	public ModuleChooserController(ModuleChooserRootPane view, StudentProfile model) {
 		//initialise view and model fields
-		this.view = view;
 		this.model = model;
-		
+		this.view = view;
+
 		//initialise view subcontainer fields
 		cspp = view.getCreateStudentProfilePane();
 		mstmb = view.getModuleSelectionToolMenuBar();
@@ -60,7 +56,7 @@ public class ModuleChooserController {
 	
 	//helper method - used to attach event handlers
 	private void attachEventHandlers() {
-		//attach an event handler to the create student profile pane
+		//attach an event handler to create student profile pane
 		cspp.addCreateStudentProfileHandler(new CreateStudentProfileHandler());
 
 		// select modules pane event handlers
@@ -70,8 +66,14 @@ public class ModuleChooserController {
 		smuvbox.removeBtnTerm2Handler(new RemoveBtnTerm2Handler());
 		smuvbox.resetBtnHandler(new ResetBtnHandler());
 		smsvbox.submitBtnHandler(new SubmitBtnHandler());
-		// event handler to change pane in reserve modules pane
-		rmpt1.confirmBtnHandler(e -> rmp.changePane());
+
+		// reserve modules pane event handlers
+		rmpt1.confirmBtnHandler(new confirmBtnHandler());
+		rmpt1.addBtnHandler(new addUnselectedHandler());
+		rmpt1.removeBtnHandler(new removeBtnHandler());
+		rmpt2.confirmBtnHandler(new confirmBtnHandler2());
+		rmpt2.addBtnHandler(new addUnselectedHandler2());
+		rmpt2.removeBtnHandler(new removeBtnHandler2());
 
 		//attach an event handler to the menu bar that closes the application
 		mstmb.addExitHandler(e -> System.exit(0));
@@ -87,9 +89,16 @@ public class ModuleChooserController {
 		smuvbox.disableBtnRemoveTerm1(smsvbox.isNotSelectedTerm1());
 		smuvbox.disableBtnRemoveTerm2(smsvbox.isNotSelectedTerm2());
 		smsvbox.disableSubmitBtn(smsvbox.creditsAre60().or(smuvbox.creditsAre60()));
+		rmpt1.disableConfirmBtnHandler(rmpt1.reservedIsFull());
+		rmpt1.disableRemoveBtnHandler(rmpt1.removeIsNotSelected());
+		rmpt1.disableAddBtnHandler(rmpt1.addIsNotSelectedOrFull());
+		rmpt2.disableAddBtnHandler(rmpt2.addIsNotSelectedOrFull());
+		rmpt2.disableConfirmBtnHandler(rmpt2.reservedIsFull());
+		rmpt2.disableRemoveBtnHandler(rmpt2.removeIsNotSelected());
+
 	}
 	
-	//event handlers
+	// event handlers for both CreateStudentProfilePane & SelectModulesPane
 	private class CreateStudentProfileHandler implements EventHandler<ActionEvent> {
 		public void handle(ActionEvent e) {
 			// Adding data to model
@@ -103,6 +112,8 @@ public class ModuleChooserController {
 			ModuleSelection();
 			smuvbox.updateCredits(selectedModuleCredits(smsvbox.getTerm1Data()));
 			smsvbox.updateCredits(selectedModuleCredits(smsvbox.getTerm2Data()));
+
+			view.changeTab(1);
 		}
 	}
 
@@ -156,22 +167,95 @@ public class ModuleChooserController {
 			ModuleSelection();
 			smuvbox.updateCredits(selectedModuleCredits(smsvbox.getTerm1Data()));
 			smsvbox.updateCredits(selectedModuleCredits(smsvbox.getTerm2Data()));
+
 		}
 	}
 
 	private class SubmitBtnHandler implements EventHandler<ActionEvent> {
 		@Override
 		public void handle(ActionEvent event) {
-			for (Module module: smsvbox.getYearData()) {
+			// Updates all user input data into model
+			forModelData(smsvbox.getYearData());
+			forModelData(smsvbox.getTerm1Data());
+			forModelData(smsvbox.getTerm2Data());
+
+			// Updates Reserved Modules pane
+			for (Module module: smuvbox.getTerm1Data()) {
+				rmpt1.addUnselected(module);
+			}
+			for (Module module : smuvbox.getTerm2Data()) {
+				rmpt2.addUnselected(module);
+			}
+
+			rmpt1.updateCredits(selectedModuleCredits(rmpt1.getReserved()));
+			view.changeTab(2);
+		}
+		private void forModelData(ObservableList<Module> moduleData) {
+			for (Module module: moduleData) {
 				model.addSelectedModule(module);
 			}
-			for (Module module: smsvbox.getTerm1Data()) {
-				model.addSelectedModule(module);
+		}
+	}
+
+	// Event handlers for ReserveModulesPane
+	private class addUnselectedHandler implements EventHandler<ActionEvent> {
+		@Override
+		public void handle(ActionEvent event) {
+			if (Integer.parseInt(rmpt1.getCreditsRemaining()) < 30) {
+				rmpt1.addReserved(rmpt1.getUnselectedItem());
+				rmpt1.removeUnselected(rmpt1.getUnselectedItem());
+				rmpt1.updateCredits(selectedModuleCredits(rmpt1.getReserved()));
 			}
-			for (Module module: smsvbox.getTerm2Data()) {
-				model.addSelectedModule(module);
+
+		}
+	}
+
+	private class removeBtnHandler implements EventHandler<ActionEvent> {
+		@Override
+		public void handle(ActionEvent event) {
+			rmpt1.addUnselected(rmpt1.getReservedItem());
+			rmpt1.removeReserved(rmpt1.getReservedItem());
+			rmpt1.updateCredits(selectedModuleCredits(rmpt1.getReserved()));
+		}
+	}
+
+	private class confirmBtnHandler implements EventHandler<ActionEvent> {
+		@Override
+		public void handle(ActionEvent event) {
+			rmp.changePane();
+		}
+	}
+
+	private class confirmBtnHandler2 implements EventHandler<ActionEvent> {
+		@Override
+		public void handle(ActionEvent event) {
+			for (Module module : rmpt1.getReserved()) {
+				model.addReservedModule(module);
 			}
-			System.out.println(model.toString());
+			for (Module module : rmpt2.getReserved()) {
+				model.addReservedModule(module);
+			}
+			view.changeTab(3);
+		}
+	}
+
+	private class addUnselectedHandler2 implements EventHandler<ActionEvent> {
+		@Override
+		public void handle(ActionEvent event) {
+			if (Integer.parseInt(rmpt2.getCreditsRemaining()) < 30) {
+				rmpt2.addReserved(rmpt2.getUnselectedItem());
+				rmpt2.removeUnselected(rmpt2.getUnselectedItem());
+				rmpt2.updateCredits(selectedModuleCredits(rmpt2.getReserved()));
+			}
+		}
+	}
+
+	private class removeBtnHandler2 implements EventHandler<ActionEvent> {
+		@Override
+		public void handle(ActionEvent event) {
+			rmpt2.addUnselected(rmpt2.getReservedItem());
+			rmpt2.removeReserved(rmpt2.getReservedItem());
+			rmpt2.updateCredits(selectedModuleCredits(rmpt2.getReserved()));
 		}
 	}
 
@@ -242,8 +326,11 @@ public class ModuleChooserController {
 	}
 
 	// Inner method to set modules used by CreateStudentProfileHandler & ResetBtnHandler
-	public void ModuleSelection() {
+	private void ModuleSelection() {
 		smp.clearAll();
+		rmpt1.clearAll();
+		rmpt2.clearAll();
+
 
 		// Loops through each module in courses method getallmodules and updates to GUI
 		for (Module module: model.getStudentCourse().getAllModulesOnCourse()) {
@@ -262,18 +349,20 @@ public class ModuleChooserController {
 	}
 
 	// Inner method to update credit counter for modules
-	public int selectedModuleCredits(ObservableList<Module> data) {
+	private int selectedModuleCredits(ObservableList<Module> data) {
 		int credits = 0;
 
-		// collects credits from defined list
+		// collect credits from defined list
 		for (Module module : data) {
 			credits += module.getModuleCredits();
 		}
 		// collects half credits from year long module
-		for (Module module : smsvbox.getYearData()) {
-			credits += (module.getModuleCredits()/2);
+		if (data.equals(smsvbox.getTerm1Data()) || data.equals(smsvbox.getTerm2Data())) {
+			for (Module module : smsvbox.getYearData()) {
+				credits += (module.getModuleCredits()/2);
+			}
 		}
+
 		return credits;
 	}
-
 }

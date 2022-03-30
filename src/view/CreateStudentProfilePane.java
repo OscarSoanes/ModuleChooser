@@ -20,10 +20,10 @@ import model.Name;
 
 public class CreateStudentProfilePane extends GridPane {
 
-	private ComboBox<Course> cboCourses;
-	private DatePicker inputDate;
-	private TextField txtFirstName, txtSurname,  txtPnumber, txtEmail;
-	private Button btnCreateProfile;
+	private final ComboBox<Course> cboCourses;
+	private final DatePicker inputDate;
+	private final TextField txtFirstName, txtSurname,  txtPnumber, txtEmail;
+	private final Button btnCreateProfile;
 
 	public CreateStudentProfilePane() {
 		//styling

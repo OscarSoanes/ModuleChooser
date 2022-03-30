@@ -6,9 +6,9 @@ import javafx.scene.control.TitledPane;
 
 public class ReserveModulesPane extends Accordion {
 
-    private ReserveModulesTerm1Pane rmt1p;
-    private ReserveModulesTerm2Pane rmt2p;
-    private TitledPane t1, t2;
+    private final ReserveModulesTerm1Pane rmt1p;
+    private final ReserveModulesTerm2Pane rmt2p;
+    private TitledPane t2;
 
     public ReserveModulesPane() {
         // Styling
@@ -18,7 +18,7 @@ public class ReserveModulesPane extends Accordion {
         rmt1p = new ReserveModulesTerm1Pane();
         rmt2p = new ReserveModulesTerm2Pane();
 
-        t1 = new TitledPane("Term 1 Modules", rmt1p);
+        TitledPane t1 = new TitledPane("Term 1 Modules", rmt1p);
         t2 = new TitledPane("Term 2 Modules", rmt2p);
 
         this.getPanes().addAll(t1, t2);
