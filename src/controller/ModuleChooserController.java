@@ -10,6 +10,8 @@ import model.Module;
 import model.StudentProfile;
 import view.*;
 
+import java.util.*;
+
 import static model.Schedule.*;
 
 public class ModuleChooserController {
@@ -95,7 +97,7 @@ public class ModuleChooserController {
 		rmpt2.disableAddBtnHandler(rmpt2.addIsNotSelectedOrFull());
 		rmpt2.disableConfirmBtnHandler(rmpt2.reservedIsFull());
 		rmpt2.disableRemoveBtnHandler(rmpt2.removeIsNotSelected());
-
+		osp.disableSaveBtnHandler(osp.textFieldNotCompleted());
 	}
 	
 	// event handlers for both CreateStudentProfilePane & SelectModulesPane
@@ -113,6 +115,17 @@ public class ModuleChooserController {
 			smuvbox.updateCredits(selectedModuleCredits(smsvbox.getTerm1Data()));
 			smsvbox.updateCredits(selectedModuleCredits(smsvbox.getTerm2Data()));
 
+			// Update Overview pane with new data
+			osp.setProfile(
+					"Name: " + model.getStudentName().getFullName() + "\n" +
+					"P Number: " + model.getStudentPnumber() + "\n" +
+					"Email: " + model.getStudentEmail() + "\n" +
+					"Date: " 	+ model.getSubmissionDate().getDayOfMonth() + "/"
+								+ model.getSubmissionDate().getMonth().getValue() + "/"
+								+ model.getSubmissionDate().getYear() + "\n" +
+					"Course: " + model.getStudentCourse().getCourseName());
+
+			// Change tab
 			view.changeTab(1);
 		}
 	}
@@ -147,6 +160,14 @@ public class ModuleChooserController {
 				smsvbox.removeTerm1Module(smsvbox.getSelectedTerm1());
 				smuvbox.updateCredits(selectedModuleCredits(smsvbox.getTerm1Data()));
 			}
+			// check if data is already in ReserveModulesPane
+			if (!rmpt1.getUnselected().isEmpty()) {
+				rmpt1.clearAll(); rmpt2.clearAll();
+			}
+			// check if data is already in OverviewSelectionPane
+			if (!osp.getSelected().equals("Selected modules will appear here")) {
+				osp.clearSelected(); osp.clearReserved();
+			}
 		}
 	}
 
@@ -157,6 +178,14 @@ public class ModuleChooserController {
 				smuvbox.addTerm2Module(smsvbox.getSelectedTerm2());
 				smsvbox.removeTerm2Module(smsvbox.getSelectedTerm2());
 				smsvbox.updateCredits(selectedModuleCredits(smsvbox.getTerm2Data()));
+			}
+			// check if data is already in ReserveModulesPane
+			if (!rmpt2.getUnselected().isEmpty()) {
+				rmpt1.clearAll(); rmpt2.clearAll();
+			}
+			// check if data is already in OverviewSelectionPane
+			if (!osp.getSelected().equals("Selected modules will appear here")) {
+				osp.clearSelected(); osp.clearReserved();
 			}
 		}
 	}
@@ -187,7 +216,37 @@ public class ModuleChooserController {
 				rmpt2.addUnselected(module);
 			}
 
+			// update credits to ensure they are reset upon submit
 			rmpt1.updateCredits(selectedModuleCredits(rmpt1.getReserved()));
+			rmpt2.updateCredits(selectedModuleCredits(rmpt2.getReserved()));
+
+
+			// sorting list by Delivery, Mandatory (reverse) then module code
+			ArrayList<Module> sortedModules = new ArrayList<>(model.getAllSelectedModules());
+			sortedModules.sort(Comparator
+					.comparing(Module::getDelivery)
+					.thenComparing(Module::isMandatory, Comparator.reverseOrder())
+					.thenComparing(Module::getModuleCode));
+
+			// update overview pane with new data
+			StringBuilder overviewData = new StringBuilder("Selected modules: \n======\n");
+			for (Module module: sortedModules) {
+				overviewData.append("Module code: ").append(module.getModuleCode());
+				overviewData.append(", Module name: ").append(module.getModuleName()).append("\n");
+				overviewData.append("Credits: ").append(module.getModuleCredits());
+
+				if (module.isMandatory()) {overviewData.append(", Mandatory: Yes");}
+				else {overviewData.append(", Mandatory: No");}
+
+				overviewData.append(", Delivery: ");
+				switch (module.getDelivery()) {
+					case TERM_1: overviewData.append("Term 1\n\n"); break;
+					case TERM_2: overviewData.append("Term 2\n\n"); break;
+					case YEAR_LONG: overviewData.append("Year long\n\n"); break;
+				}
+			}
+			osp.setSelected(overviewData.toString());
+
 			view.changeTab(2);
 		}
 		private void forModelData(ObservableList<Module> moduleData) {
@@ -216,6 +275,11 @@ public class ModuleChooserController {
 			rmpt1.addUnselected(rmpt1.getReservedItem());
 			rmpt1.removeReserved(rmpt1.getReservedItem());
 			rmpt1.updateCredits(selectedModuleCredits(rmpt1.getReserved()));
+
+			// check if data is already in OverviewSelectionPane
+			if (!osp.getSelected().equals("Selected modules will appear here")) {
+				osp.clearReserved();
+			}
 		}
 	}
 
@@ -235,6 +299,29 @@ public class ModuleChooserController {
 			for (Module module : rmpt2.getReserved()) {
 				model.addReservedModule(module);
 			}
+
+			// sorting list by delivery, mandatory (reverse) then module code
+			ArrayList<Module> sortedModules = new ArrayList<>(model.getAllReservedModules());
+			sortedModules.sort(Comparator
+					.comparing(Module::getDelivery)
+					.thenComparing(Module::isMandatory, Comparator.reverseOrder())
+					.thenComparing(Module::getModuleCode));
+
+			// update overview selection pane with new data
+			StringBuilder overviewData = new StringBuilder("Reserved modules: \n======\n");
+			for (Module module: sortedModules) {
+				overviewData.append("Module code: ").append(module.getModuleCode());
+				overviewData.append(", Module name: ").append(module.getModuleName()).append("\n");
+				overviewData.append("Credits: ").append(module.getModuleCredits());
+
+				overviewData.append(", Delivery: ");
+				switch (module.getDelivery()) {
+					case TERM_1: overviewData.append("Term 1\n\n"); break;
+					case TERM_2: overviewData.append("Term 2\n\n"); break;
+				}
+			}
+			osp.setReserved(overviewData.toString());
+
 			view.changeTab(3);
 		}
 	}
@@ -256,6 +343,11 @@ public class ModuleChooserController {
 			rmpt2.addUnselected(rmpt2.getReservedItem());
 			rmpt2.removeReserved(rmpt2.getReservedItem());
 			rmpt2.updateCredits(selectedModuleCredits(rmpt2.getReserved()));
+
+			// check if data is already in OverviewSelectionPane
+			if (!osp.getSelected().equals("Selected modules will appear here")) {
+				osp.clearReserved();
+			}
 		}
 	}
 
@@ -330,7 +422,8 @@ public class ModuleChooserController {
 		smp.clearAll();
 		rmpt1.clearAll();
 		rmpt2.clearAll();
-
+		osp.clearSelected();
+		osp.clearReserved();
 
 		// Loops through each module in courses method getallmodules and updates to GUI
 		for (Module module: model.getStudentCourse().getAllModulesOnCourse()) {

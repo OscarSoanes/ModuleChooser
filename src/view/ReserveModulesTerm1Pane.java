@@ -84,6 +84,7 @@ public class ReserveModulesTerm1Pane extends GridPane {
         this.add(btnPane, 0, 3, 2, 1);
     }
     // Methods
+    public ObservableList<Module> getUnselected() {return unselected;}
     public ObservableList<Module> getReserved() {
         return reserved;
     }
@@ -147,7 +148,7 @@ public class ReserveModulesTerm1Pane extends GridPane {
     }
 
     public BooleanBinding addIsNotSelectedOrFull() {
-        return Bindings.isEmpty(lstUnselected.getSelectionModel().getSelectedItems()).or(
+        return  Bindings.isEmpty(lstUnselected.getSelectionModel().getSelectedItems()).or(
                 StringExpression.stringExpression(txtCredits.textProperty()).isEqualTo("30")
         );
     }

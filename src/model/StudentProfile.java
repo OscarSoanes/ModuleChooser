@@ -1,6 +1,7 @@
 package model;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -21,8 +22,8 @@ public class StudentProfile {
 		studentEmail = "";
 		studentDate = null;
 		studentCourse = null;
-		selectedModules = new TreeSet<Module>();
-		reservedModules = new TreeSet<Module>();
+		selectedModules = new TreeSet<>();
+		reservedModules = new TreeSet<>();
 	}
 	
 	public String getStudentPnumber() {
