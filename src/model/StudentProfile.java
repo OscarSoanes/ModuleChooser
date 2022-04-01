@@ -1,12 +1,13 @@
 package model;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 
 
-public class StudentProfile {
+public class StudentProfile implements Serializable {
 
 	private String studentPnumber;
 	private Name studentName;
@@ -88,6 +89,24 @@ public class StudentProfile {
 	
 	public void clearReservedModules() {
 		reservedModules.clear();
+	}
+
+	public boolean isSelected(Module module) {
+		for (Module selectedModule : selectedModules) {
+			if (module.equals(selectedModule)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean isReserved(Module module) {
+		for (Module reservedModule : reservedModules) {
+			if (module.equals(reservedModule)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	@Override

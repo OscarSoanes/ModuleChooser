@@ -1,18 +1,19 @@
 package model;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 
-public class Course {
+public class Course implements Serializable {
 	
 	private String courseName;
 	private Map<String, Module> modulesOnCourse;
 	
 	public Course(String courseName) {
 		this.courseName = courseName;
-		modulesOnCourse = new HashMap<String, Module>();
+		modulesOnCourse = new HashMap<>();
 	}
 	
 	public String getCourseName() {

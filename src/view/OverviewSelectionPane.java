@@ -67,9 +67,6 @@ public class OverviewSelectionPane extends GridPane {
     }
 
     // Methods
-    public String getProfile() {
-        return txtProfile.getText();
-    }
     public String getSelected() {
         return txtSelected.getText();
     }
@@ -87,11 +84,6 @@ public class OverviewSelectionPane extends GridPane {
         txtReserved.setText(reserved);
     }
 
-    public void clearAll() {
-        txtProfile.setText("Profile will appear here");
-        clearSelected();
-        clearReserved();
-    }
     public void clearSelected() {
         txtSelected.setText("Selected modules will appear here");
     }
@@ -113,9 +105,5 @@ public class OverviewSelectionPane extends GridPane {
         return  StringExpression.stringExpression(txtProfile.textProperty()).isEqualTo("Profile will appear here")
                 .or(StringExpression.stringExpression(txtSelected.textProperty()).isEqualTo("Selected modules will appear here"))
                 .or(StringExpression.stringExpression(txtReserved.textProperty()).isEqualTo("Reserved modules will appear here"));
-//        return  notEqualTo(txtProfile.textProperty(), "Profile will appear here").or(
-//                notEqualTo(txtReserved.textProperty(), "Selected modules will appear here").or(
-//                notEqualTo(txtSelected.textProperty(), "Reserved modules will appear here")
-//        ));
     }
 }

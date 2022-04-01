@@ -4,12 +4,11 @@ import javafx.beans.binding.StringExpression;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import model.Course;
-import model.Schedule;
+import model.*;
 import model.Module;
-import model.StudentProfile;
 import view.*;
 
+import java.io.*;
 import java.util.*;
 
 import static model.Schedule.*;
@@ -18,7 +17,7 @@ public class ModuleChooserController {
 
 	//fields to be used throughout class
 	private final ModuleChooserRootPane view;
-	private final StudentProfile model;
+	private StudentProfile model;
 	
 	private final CreateStudentProfilePane cspp;
 	private final ModuleChooserMenuBar mstmb;
@@ -77,8 +76,11 @@ public class ModuleChooserController {
 		rmpt2.addBtnHandler(new addUnselectedHandler2());
 		rmpt2.removeBtnHandler(new removeBtnHandler2());
 
-		//attach an event handler to the menu bar that closes the application
+		//attach an event handler to the menu bar
 		mstmb.addExitHandler(e -> System.exit(0));
+		mstmb.addSaveHandler(new saveMenuHandler());
+		mstmb.addLoadHandler(new loadMenuHandler());
+		mstmb.addAboutHandler(new aboutMenuHandler());
 	}
 
 	public void attachBindings() {
@@ -99,7 +101,134 @@ public class ModuleChooserController {
 		rmpt2.disableRemoveBtnHandler(rmpt2.removeIsNotSelected());
 		osp.disableSaveBtnHandler(osp.textFieldNotCompleted());
 	}
-	
+
+	// Event handlers for menubar
+	private class saveMenuHandler implements EventHandler<ActionEvent> {
+		@Override
+		public void handle(ActionEvent event) {
+			// Checking for unsaved data
+			model.setStudentCourse(cspp.getSelectedCourse());
+			System.out.println(cspp.getSelectedCourse());
+			model.setStudentPnumber(cspp.getStudentPnumber());
+			model.setStudentName(cspp.getStudentName());
+			model.setStudentEmail(cspp.getStudentEmail());
+			model.setSubmissionDate(cspp.getStudentDate());
+
+			model.clearSelectedModules();
+			model.clearReservedModules();
+
+			addSelected(smsvbox.getTerm1Data());
+			addSelected(smsvbox.getTerm2Data());
+			addSelected(smsvbox.getYearData());
+
+			System.out.println(model);
+
+			for (Module module : rmpt1.getReserved()) {
+				model.addReservedModule(module);
+			}
+			for (Module module : rmpt2.getReserved()) {
+				model.addReservedModule(module);
+			}
+			// Saving model into studentProfile.dat
+			try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("studentProfile.dat"))) {
+				oos.writeObject(model);
+				oos.flush();
+			} catch (IOException e) {
+				System.out.println("Error occured" + e);
+			}
+		}
+		private void addSelected(ObservableList<Module> list) {
+			for (Module module : list) {
+				model.addSelectedModule(module);
+			}
+		}
+	}
+	private class loadMenuHandler implements EventHandler<ActionEvent> {
+		@Override
+		public void handle(ActionEvent event) {
+			// Loading data from stream
+			try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("studentProfile.dat"))) {
+				model = (StudentProfile) ois.readObject();
+			}
+			catch (IOException ioExcep){
+				System.out.println("Error loading");
+			}
+			catch (ClassNotFoundException c) {
+				System.out.println("Class Not found");
+			}
+
+			// Clearing existing data
+			clearEverything();
+
+			// Placing new data into StudentProfilePane
+			cspp.setData(
+					model.getStudentCourse(),
+					model.getStudentPnumber(),
+					model.getStudentName().getFirstName(),
+					model.getStudentName().getFamilyName(),
+					model.getStudentEmail(),
+					model.getSubmissionDate()
+			);
+
+			// Placing new data into SelectModulesPane
+			for (Module module : model.getStudentCourse().getAllModulesOnCourse()) {
+				if (model.isSelected(module)) {
+					switch (module.getDelivery()) {
+						case TERM_1: smsvbox.addTerm1Module(module); break;
+						case TERM_2: smsvbox.addTerm2Module(module); break;
+						case YEAR_LONG: smsvbox.addYearModule(module); break;
+					}
+				} else {
+					switch (module.getDelivery()) {
+						case TERM_1: smuvbox.addTerm1Module(module); break;
+						case TERM_2: smuvbox.addTerm2Module(module); break;
+					}
+				}
+			}
+
+			// Matching the credits with the new data
+			rmpt1.updateCredits(selectedModuleCredits(smsvbox.getTerm1Data()));
+			rmpt2.updateCredits(selectedModuleCredits(smsvbox.getTerm2Data()));
+
+			// Placing new data into ReserveModulesPane (if new data exists else it remains empty)
+			if (selectedModuleCredits(smsvbox.getTerm1Data()) + selectedModuleCredits(smsvbox.getTerm2Data()) == 120) {
+				for (Module module : model.getStudentCourse().getAllModulesOnCourse()) {
+					if (model.isSelected(module)) continue;
+
+					if (model.isReserved(module)) {
+						switch (module.getDelivery()) {
+							case TERM_1: rmpt1.addReserved(module); break;
+							case TERM_2: rmpt2.addReserved(module); break;
+						}
+					} else {
+						switch (module.getDelivery()) {
+							case TERM_1: rmpt1.addUnselected(module); break;
+							case TERM_2: rmpt2.addUnselected(module); break;
+						}
+					}
+				}
+			}
+
+			// Matching credits with the new data
+			rmpt1.updateCredits(selectedModuleCredits(rmpt1.getReserved()));
+			rmpt2.updateCredits(selectedModuleCredits(rmpt2.getReserved()));
+
+			// Checking if data needs to be applied to OverviewSelectionPane
+			if (Integer.parseInt(smuvbox.getCredits()) + Integer.parseInt(smsvbox.getCredits()) == 120) {
+				overviewPaneSelected();
+			}
+			if (Integer.parseInt(rmpt1.getCreditsRemaining()) + Integer.parseInt(rmpt2.getCreditsRemaining()) == 60) {
+				overviewPaneReserved();
+			}
+		}
+	}
+	private class aboutMenuHandler implements EventHandler<ActionEvent> {
+		@Override
+		public void handle(ActionEvent event) {
+
+		}
+	}
+
 	// event handlers for both CreateStudentProfilePane & SelectModulesPane
 	private class CreateStudentProfileHandler implements EventHandler<ActionEvent> {
 		public void handle(ActionEvent e) {
@@ -220,32 +349,7 @@ public class ModuleChooserController {
 			rmpt1.updateCredits(selectedModuleCredits(rmpt1.getReserved()));
 			rmpt2.updateCredits(selectedModuleCredits(rmpt2.getReserved()));
 
-
-			// sorting list by Delivery, Mandatory (reverse) then module code
-			ArrayList<Module> sortedModules = new ArrayList<>(model.getAllSelectedModules());
-			sortedModules.sort(Comparator
-					.comparing(Module::getDelivery)
-					.thenComparing(Module::isMandatory, Comparator.reverseOrder())
-					.thenComparing(Module::getModuleCode));
-
-			// update overview pane with new data
-			StringBuilder overviewData = new StringBuilder("Selected modules: \n======\n");
-			for (Module module: sortedModules) {
-				overviewData.append("Module code: ").append(module.getModuleCode());
-				overviewData.append(", Module name: ").append(module.getModuleName()).append("\n");
-				overviewData.append("Credits: ").append(module.getModuleCredits());
-
-				if (module.isMandatory()) {overviewData.append(", Mandatory: Yes");}
-				else {overviewData.append(", Mandatory: No");}
-
-				overviewData.append(", Delivery: ");
-				switch (module.getDelivery()) {
-					case TERM_1: overviewData.append("Term 1\n\n"); break;
-					case TERM_2: overviewData.append("Term 2\n\n"); break;
-					case YEAR_LONG: overviewData.append("Year long\n\n"); break;
-				}
-			}
-			osp.setSelected(overviewData.toString());
+			overviewPaneSelected();
 
 			view.changeTab(2);
 		}
@@ -277,8 +381,10 @@ public class ModuleChooserController {
 			rmpt1.updateCredits(selectedModuleCredits(rmpt1.getReserved()));
 
 			// check if data is already in OverviewSelectionPane
-			if (!osp.getSelected().equals("Selected modules will appear here")) {
+			if (!osp.getReserved().equals("Selected modules will appear here")) {
 				osp.clearReserved();
+				model.clearSelectedModules();
+				model.clearReservedModules();
 			}
 		}
 	}
@@ -300,27 +406,7 @@ public class ModuleChooserController {
 				model.addReservedModule(module);
 			}
 
-			// sorting list by delivery, mandatory (reverse) then module code
-			ArrayList<Module> sortedModules = new ArrayList<>(model.getAllReservedModules());
-			sortedModules.sort(Comparator
-					.comparing(Module::getDelivery)
-					.thenComparing(Module::isMandatory, Comparator.reverseOrder())
-					.thenComparing(Module::getModuleCode));
-
-			// update overview selection pane with new data
-			StringBuilder overviewData = new StringBuilder("Reserved modules: \n======\n");
-			for (Module module: sortedModules) {
-				overviewData.append("Module code: ").append(module.getModuleCode());
-				overviewData.append(", Module name: ").append(module.getModuleName()).append("\n");
-				overviewData.append("Credits: ").append(module.getModuleCredits());
-
-				overviewData.append(", Delivery: ");
-				switch (module.getDelivery()) {
-					case TERM_1: overviewData.append("Term 1\n\n"); break;
-					case TERM_2: overviewData.append("Term 2\n\n"); break;
-				}
-			}
-			osp.setReserved(overviewData.toString());
+			overviewPaneReserved();
 
 			view.changeTab(3);
 		}
@@ -345,7 +431,7 @@ public class ModuleChooserController {
 			rmpt2.updateCredits(selectedModuleCredits(rmpt2.getReserved()));
 
 			// check if data is already in OverviewSelectionPane
-			if (!osp.getSelected().equals("Selected modules will appear here")) {
+			if (!osp.getReserved().equals("Selected modules will appear here")) {
 				osp.clearReserved();
 			}
 		}
@@ -419,11 +505,7 @@ public class ModuleChooserController {
 
 	// Inner method to set modules used by CreateStudentProfileHandler & ResetBtnHandler
 	private void ModuleSelection() {
-		smp.clearAll();
-		rmpt1.clearAll();
-		rmpt2.clearAll();
-		osp.clearSelected();
-		osp.clearReserved();
+		clearEverything();
 
 		// Loops through each module in courses method getallmodules and updates to GUI
 		for (Module module: model.getStudentCourse().getAllModulesOnCourse()) {
@@ -439,6 +521,14 @@ public class ModuleChooserController {
 
 			if (module.getDelivery().equals(YEAR_LONG)) smsvbox.addYearModule(module);
 		}
+	}
+
+	private void clearEverything() {
+		smp.clearAll();
+		rmpt1.clearAll();
+		rmpt2.clearAll();
+		osp.clearSelected();
+		osp.clearReserved();
 	}
 
 	// Inner method to update credit counter for modules
@@ -457,5 +547,55 @@ public class ModuleChooserController {
 		}
 
 		return credits;
+	}
+
+	private void overviewPaneSelected() {
+		// sorting list by Delivery, Mandatory (reverse) then module code
+		ArrayList<Module> sortedModules = new ArrayList<>(model.getAllSelectedModules());
+		sortedModules.sort(Comparator
+				.comparing(Module::getDelivery)
+				.thenComparing(Module::isMandatory, Comparator.reverseOrder())
+				.thenComparing(Module::getModuleCode));
+
+		// update overview pane with new data
+		StringBuilder overviewData = new StringBuilder("Selected modules: \n======\n");
+		for (Module module: sortedModules) {
+			overviewData.append("Module code: ").append(module.getModuleCode());
+			overviewData.append(", Module name: ").append(module.getModuleName()).append("\n");
+			overviewData.append("Credits: ").append(module.getModuleCredits());
+
+			if (module.isMandatory()) {overviewData.append(", Mandatory: Yes");}
+			else {overviewData.append(", Mandatory: No");}
+
+			overviewData.append(", Delivery: ");
+			switch (module.getDelivery()) {
+				case TERM_1: overviewData.append("Term 1\n\n"); break;
+				case TERM_2: overviewData.append("Term 2\n\n"); break;
+				case YEAR_LONG: overviewData.append("Year long\n\n"); break;
+			}
+		}
+		osp.setSelected(overviewData.toString());
+	}
+
+	private void overviewPaneReserved() {
+		ArrayList<Module> sortedModules = new ArrayList<>(model.getAllReservedModules());
+		sortedModules.sort(Comparator
+				.comparing(Module::getDelivery)
+				.thenComparing(Module::isMandatory, Comparator.reverseOrder())
+				.thenComparing(Module::getModuleCode));
+
+		StringBuilder overviewData = new StringBuilder("Reserved modules: \n======\n");
+		for (Module module: sortedModules) {
+			overviewData.append("Module code: ").append(module.getModuleCode());
+			overviewData.append(", Module name: ").append(module.getModuleName()).append("\n");
+			overviewData.append("Credits: ").append(module.getModuleCredits());
+
+			overviewData.append(", Delivery: ");
+			switch (module.getDelivery()) {
+				case TERM_1: overviewData.append("Term 1\n\n"); break;
+				case TERM_2: overviewData.append("Term 2\n\n"); break;
+			}
+		}
+		osp.setReserved(overviewData.toString());
 	}
 }

@@ -1,6 +1,7 @@
 package view;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 import javafx.beans.binding.BooleanBinding;
 import javafx.event.ActionEvent;
@@ -108,7 +109,25 @@ public class CreateStudentProfilePane extends GridPane {
 	public LocalDate getStudentDate() {
 		return inputDate.getValue();
 	}
-	
+
+	public void setData(Course course, String pnumber, String firstname, String lastname, String email, LocalDate date) {
+		if (course.getCourseName().equals("Computer Science")) {
+			cboCourses.getSelectionModel().select(0);
+		}
+		else if (course.getCourseName().equals("Software Engineering")) {
+			cboCourses.getSelectionModel().select(1);
+		}
+		else {
+			cboCourses.getSelectionModel().select(0);
+		}
+
+		txtPnumber.setText(pnumber);
+		txtFirstName.setText(firstname);
+		txtSurname.setText(lastname);
+		txtEmail.setText(email);
+		inputDate.setValue(date);
+	}
+
 	
 	//method to attach the create student profile button event handler
 	public void addCreateStudentProfileHandler(EventHandler<ActionEvent> handler) {
@@ -121,10 +140,9 @@ public class CreateStudentProfilePane extends GridPane {
 	}
 
 	public BooleanBinding isCreateStudentEmpty() {
-		return txtPnumber.textProperty().isNotEmpty();
-//		return txtPnumber.textProperty().isEmpty().or(txtFirstName.textProperty().isEmpty()
-//				.or(txtSurname.textProperty().isEmpty().or(txtEmail.textProperty().isEmpty()
-//						.or(inputDate.valueProperty().isNull()))));
+		return txtPnumber.textProperty().isEmpty().or(txtFirstName.textProperty().isEmpty()
+				.or(txtSurname.textProperty().isEmpty().or(txtEmail.textProperty().isEmpty()
+						.or(inputDate.valueProperty().isNull()))));
 	}
 
 }
