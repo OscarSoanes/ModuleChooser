@@ -128,6 +128,15 @@ public class CreateStudentProfilePane extends GridPane {
 		inputDate.setValue(date);
 	}
 
+	public boolean isAnyNull() {
+		return  txtPnumber.getText().isEmpty() || txtFirstName.getText().isEmpty() ||
+				txtSurname.getText().isEmpty() || txtEmail.getText().isEmpty() ||
+				inputDate.getValue().toString().isEmpty();
+
+
+
+	}
+
 	
 	//method to attach the create student profile button event handler
 	public void addCreateStudentProfileHandler(EventHandler<ActionEvent> handler) {

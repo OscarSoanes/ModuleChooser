@@ -4,6 +4,7 @@ import javafx.beans.binding.StringExpression;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.Alert;
 import model.*;
 import model.Module;
 import view.*;
@@ -76,6 +77,9 @@ public class ModuleChooserController {
 		rmpt2.addBtnHandler(new addUnselectedHandler2());
 		rmpt2.removeBtnHandler(new removeBtnHandler2());
 
+		// overview pane event handlers
+		osp.saveBtnHandler(new saveBtnHandler());
+
 		//attach an event handler to the menu bar
 		mstmb.addExitHandler(e -> System.exit(0));
 		mstmb.addSaveHandler(new saveMenuHandler());
@@ -133,8 +137,9 @@ public class ModuleChooserController {
 			try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("studentProfile.dat"))) {
 				oos.writeObject(model);
 				oos.flush();
+				alertDialogBuilder(Alert.AlertType.INFORMATION, "Success", "", "Successfully saved");
 			} catch (IOException e) {
-				System.out.println("Error occured" + e);
+				alertDialogBuilder(Alert.AlertType.WARNING, "Error occured", "", "Unexpected error saving");
 			}
 		}
 		private void addSelected(ObservableList<Module> list) {
@@ -149,12 +154,13 @@ public class ModuleChooserController {
 			// Loading data from stream
 			try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("studentProfile.dat"))) {
 				model = (StudentProfile) ois.readObject();
+				alertDialogBuilder(Alert.AlertType.INFORMATION, "Success", "", "Successfully loaded");
 			}
 			catch (IOException ioExcep){
-				System.out.println("Error loading");
+				alertDialogBuilder(Alert.AlertType.WARNING, "Error occured", "", "Unexpected error loading");
 			}
 			catch (ClassNotFoundException c) {
-				System.out.println("Class Not found");
+				alertDialogBuilder(Alert.AlertType.WARNING, "Error occured", "", "Class not found");
 			}
 
 			// Clearing existing data
@@ -171,17 +177,19 @@ public class ModuleChooserController {
 			);
 
 			// Placing new data into SelectModulesPane
-			for (Module module : model.getStudentCourse().getAllModulesOnCourse()) {
-				if (model.isSelected(module)) {
-					switch (module.getDelivery()) {
-						case TERM_1: smsvbox.addTerm1Module(module); break;
-						case TERM_2: smsvbox.addTerm2Module(module); break;
-						case YEAR_LONG: smsvbox.addYearModule(module); break;
-					}
-				} else {
-					switch (module.getDelivery()) {
-						case TERM_1: smuvbox.addTerm1Module(module); break;
-						case TERM_2: smuvbox.addTerm2Module(module); break;
+			if (!cspp.isAnyNull()) {
+				for (Module module : model.getStudentCourse().getAllModulesOnCourse()) {
+					if (model.isSelected(module)) {
+						switch (module.getDelivery()) {
+							case TERM_1: smsvbox.addTerm1Module(module); break;
+							case TERM_2: smsvbox.addTerm2Module(module); break;
+							case YEAR_LONG: smsvbox.addYearModule(module); break;
+						}
+					} else {
+						switch (module.getDelivery()) {
+							case TERM_1: smuvbox.addTerm1Module(module); break;
+							case TERM_2: smuvbox.addTerm2Module(module); break;
+						}
 					}
 				}
 			}
@@ -225,7 +233,7 @@ public class ModuleChooserController {
 	private class aboutMenuHandler implements EventHandler<ActionEvent> {
 		@Override
 		public void handle(ActionEvent event) {
-
+			//TODO THIS BUTTON
 		}
 	}
 
@@ -437,6 +445,13 @@ public class ModuleChooserController {
 		}
 	}
 
+	private class saveBtnHandler implements EventHandler<ActionEvent> {
+		@Override
+		public void handle(ActionEvent event) {
+			//TODO THIS BUTTON
+		}
+	}
+
 	//helper method - generates course and module data and returns courses within an array
 	private Course[] generateAndGetCourses() {
 		Module imat3423 = new Module("IMAT3423", "Systems Building: Methods", 15, true, TERM_1);
@@ -597,5 +612,14 @@ public class ModuleChooserController {
 			}
 		}
 		osp.setReserved(overviewData.toString());
+	}
+
+	//helper method to build dialogs
+	private void alertDialogBuilder(Alert.AlertType type, String title, String header, String content) {
+		Alert alert = new Alert(type);
+		alert.setTitle(title);
+		alert.setHeaderText(header);
+		alert.setContentText(content);
+		alert.showAndWait();
 	}
 }
