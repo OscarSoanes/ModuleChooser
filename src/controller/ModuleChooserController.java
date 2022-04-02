@@ -233,7 +233,7 @@ public class ModuleChooserController {
 	private class aboutMenuHandler implements EventHandler<ActionEvent> {
 		@Override
 		public void handle(ActionEvent event) {
-			//TODO THIS BUTTON
+			alertDialogBuilder(Alert.AlertType.INFORMATION, "Module Chooser", "", "Module Chooser v1.11 \nCreated by Oscar");
 		}
 	}
 
@@ -522,7 +522,7 @@ public class ModuleChooserController {
 	private void ModuleSelection() {
 		clearEverything();
 
-		// Loops through each module in courses method getallmodules and updates to GUI
+		// Loops through each module in courses method getAllModules and updates to GUI
 		for (Module module: model.getStudentCourse().getAllModulesOnCourse()) {
 			if (module.getDelivery().equals(TERM_1)) {
 				if (module.isMandatory()) smsvbox.addTerm1Module(module);
