@@ -67,6 +67,9 @@ public class OverviewSelectionPane extends GridPane {
     }
 
     // Methods
+    public String getProfile(){
+        return txtProfile.getText();
+    }
     public String getSelected() {
         return txtSelected.getText();
     }

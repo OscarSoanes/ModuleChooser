@@ -109,11 +109,13 @@ public class SelectModulesSelectedVBox extends VBox {
     public void removeTerm1Module(Module module) {
         if(lstTerm1.getSelectionModel().getSelectedIndex() != -1) {
             term1Data.remove(module);
+            lstTerm1.getSelectionModel().clearSelection();
         }
     }
 
     public void removeTerm2Module(Module module) {
         term2Data.remove(module);
+        lstTerm2.getSelectionModel().clearSelection();
     }
 
     public void updateCredits(int credits) {

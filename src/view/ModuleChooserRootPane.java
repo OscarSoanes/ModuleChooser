@@ -14,6 +14,7 @@ public class ModuleChooserRootPane extends BorderPane {
 	private final ReserveModulesPane rmp;
 	private final OverviewSelectionPane ovsp;
 	private final TabPane tp;
+	private final Tab t2, t3, t4;
 	
 	public ModuleChooserRootPane() {
 		//create tab pane and disable tabs from being closed
@@ -28,13 +29,17 @@ public class ModuleChooserRootPane extends BorderPane {
 		
 		//create tabs with panes added
 		Tab t1 = new Tab("Create Profile", cspp);
-		Tab t2 = new Tab("Select Modules", smp);
-		Tab t3 = new Tab("Reserve Modules", rmp);
-		Tab t4 = new Tab("Overview Selection", ovsp);
+		t2 = new Tab("Select Modules", smp);
+		t3 = new Tab("Reserve Modules", rmp);
+		t4 = new Tab("Overview Selection", ovsp);
 		
 		//add tabs to tab pane
 		tp.getTabs().addAll(t1, t2, t3, t4);
-		
+
+		// remove tabs
+		closeSelectModules(true);
+		closeReserveModules(true);
+
 		//create menu bar
 		mstmb = new ModuleChooserMenuBar();
 		
@@ -63,6 +68,23 @@ public class ModuleChooserRootPane extends BorderPane {
 	
 	public ModuleChooserMenuBar getModuleSelectionToolMenuBar() {
 		return mstmb;
+	}
+
+	public void closeSelectModules(boolean close) {
+		if (close) {
+			tp.getTabs().remove(t2);
+		} else {
+			tp.getTabs().add(1, t2);
+		}
+	}
+
+	public void closeReserveModules(boolean close) {
+		if (close) {
+			tp.getTabs().remove(t3);
+		} else {
+			tp.getTabs().add(2, t3);
+			tp.getTabs().add(3, t4);
+		}
 	}
 	
 	//method to allow the controller to change tabs

@@ -116,9 +116,11 @@ public class ReserveModulesTerm1Pane extends GridPane {
 
     public void removeUnselected(Module module) {
         unselected.remove(module);
+        lstUnselected.getSelectionModel().clearSelection();
     }
     public void removeReserved(Module module) {
         reserved.remove(module);
+        lstReserved.getSelectionModel().clearSelection();
     }
 
     public void clearAll() {

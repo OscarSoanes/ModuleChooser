@@ -115,9 +115,12 @@ public class SelectModulesUnselectedVBox extends VBox {
 
     public void removeTerm1Module(Module module) {
         term1Data.remove(module);
+        lstTerm1.getSelectionModel().clearSelection();
+
     }
     public void removeTerm2Module(Module module) {
         term2Data.remove(module);
+        lstTerm2.getSelectionModel().clearSelection();
     }
 
     public void clearAll() {

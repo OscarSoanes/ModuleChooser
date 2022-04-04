@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
@@ -46,7 +47,7 @@ public class CreateStudentProfilePane extends GridPane {
 		Label lblDate = new Label("Input date: ");
 		
 		//initialise combobox
-		cboCourses = new ComboBox<>(); //this is populated via method towards end of class
+		cboCourses = new ComboBox<Course>(); //this is populated via method towards end of class
 		
 		//setup text fields
 		txtFirstName = new TextField();
@@ -141,6 +142,19 @@ public class CreateStudentProfilePane extends GridPane {
 	//method to attach the create student profile button event handler
 	public void addCreateStudentProfileHandler(EventHandler<ActionEvent> handler) {
 		btnCreateProfile.setOnAction(handler);
+	}
+	public void studentCourseChangedListener(ChangeListener<Course> listener) {
+		cboCourses.getSelectionModel().selectedItemProperty().addListener(listener);
+	}
+
+	public void studentTextFieldChangedListener(ChangeListener<String> listener) {
+		txtPnumber.textProperty().addListener(listener);
+		txtFirstName.textProperty().addListener(listener);
+		txtSurname.textProperty().addListener(listener);
+		txtEmail.textProperty().addListener(listener);
+	}
+	public void studentDateChangedListener(ChangeListener<LocalDate> listener) {
+		inputDate.valueProperty().addListener(listener);
 	}
 
 	// validation

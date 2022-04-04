@@ -1,15 +1,21 @@
 package controller;
 
 import javafx.beans.binding.StringExpression;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.stage.FileChooser;
 import model.*;
 import model.Module;
 import view.*;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.time.LocalDate;
 import java.util.*;
 
 import static model.Schedule.*;
@@ -60,6 +66,9 @@ public class ModuleChooserController {
 	private void attachEventHandlers() {
 		//attach an event handler to create student profile pane
 		cspp.addCreateStudentProfileHandler(new CreateStudentProfileHandler());
+		cspp.studentTextFieldChangedListener(new StudentProfileChangedListener());
+		cspp.studentCourseChangedListener(new StudentCourseChangedListener());
+		cspp.studentDateChangedListener(new StudentDateChangedListener());
 
 		// select modules pane event handlers
 		smuvbox.addBtnTerm1Handler(new AddBtnTerm1Handler());
@@ -101,7 +110,7 @@ public class ModuleChooserController {
 		rmpt1.disableRemoveBtnHandler(rmpt1.removeIsNotSelected());
 		rmpt1.disableAddBtnHandler(rmpt1.addIsNotSelectedOrFull());
 		rmpt2.disableAddBtnHandler(rmpt2.addIsNotSelectedOrFull());
-		rmpt2.disableConfirmBtnHandler(rmpt2.reservedIsFull());
+		rmpt2.disableConfirmBtnHandler(rmpt2.reservedIsFull().or(rmpt1.reservedIsFull()));
 		rmpt2.disableRemoveBtnHandler(rmpt2.removeIsNotSelected());
 		osp.disableSaveBtnHandler(osp.textFieldNotCompleted());
 	}
@@ -112,7 +121,6 @@ public class ModuleChooserController {
 		public void handle(ActionEvent event) {
 			// Checking for unsaved data
 			model.setStudentCourse(cspp.getSelectedCourse());
-			System.out.println(cspp.getSelectedCourse());
 			model.setStudentPnumber(cspp.getStudentPnumber());
 			model.setStudentName(cspp.getStudentName());
 			model.setStudentEmail(cspp.getStudentEmail());
@@ -121,11 +129,21 @@ public class ModuleChooserController {
 			model.clearSelectedModules();
 			model.clearReservedModules();
 
-			addSelected(smsvbox.getTerm1Data());
-			addSelected(smsvbox.getTerm2Data());
-			addSelected(smsvbox.getYearData());
+			// Check if there is nothing in the select modules panes
+			// then do different situations based on what happens
+			if (!smsvbox.getYearData().isEmpty()) {
+				addSelected(smsvbox.getTerm1Data());
+				addSelected(smsvbox.getTerm2Data());
+				addSelected(smsvbox.getYearData());
+			}
+			else {
+				for (Module module: model.getStudentCourse().getAllModulesOnCourse()) {
 
-			System.out.println(model);
+					if (module.isMandatory()) {
+						model.addSelectedModule(module);
+					}
+				}
+			}
 
 			for (Module module : rmpt1.getReserved()) {
 				model.addReservedModule(module);
@@ -137,9 +155,9 @@ public class ModuleChooserController {
 			try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("studentProfile.dat"))) {
 				oos.writeObject(model);
 				oos.flush();
-				alertDialogBuilder(Alert.AlertType.INFORMATION, "Success", "", "Successfully saved");
+				alertDialogBuilder(Alert.AlertType.INFORMATION, "Success", "Successfully saved");
 			} catch (IOException e) {
-				alertDialogBuilder(Alert.AlertType.WARNING, "Error occured", "", "Unexpected error saving");
+				alertDialogBuilder(Alert.AlertType.WARNING, "Error occured", "Unexpected error saving");
 			}
 		}
 		private void addSelected(ObservableList<Module> list) {
@@ -154,17 +172,21 @@ public class ModuleChooserController {
 			// Loading data from stream
 			try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("studentProfile.dat"))) {
 				model = (StudentProfile) ois.readObject();
-				alertDialogBuilder(Alert.AlertType.INFORMATION, "Success", "", "Successfully loaded");
+				alertDialogBuilder(Alert.AlertType.INFORMATION, "Success", "Successfully loaded");
 			}
 			catch (IOException ioExcep){
-				alertDialogBuilder(Alert.AlertType.WARNING, "Error occured", "", "Unexpected error loading");
+				alertDialogBuilder(Alert.AlertType.WARNING, "Error occured", "Unexpected error loading");
+				return;
 			}
 			catch (ClassNotFoundException c) {
-				alertDialogBuilder(Alert.AlertType.WARNING, "Error occured", "", "Class not found");
+				alertDialogBuilder(Alert.AlertType.WARNING, "Error occured", "Class not found");
+				return;
 			}
 
 			// Clearing existing data
 			clearEverything();
+			view.closeSelectModules(true);
+			view.closeReserveModules(true);
 
 			// Placing new data into StudentProfilePane
 			cspp.setData(
@@ -178,6 +200,16 @@ public class ModuleChooserController {
 
 			// Placing new data into SelectModulesPane
 			if (!cspp.isAnyNull()) {
+				osp.setProfile(
+						"Name: " 	+ model.getStudentName().getFullName() + "\n" +
+						"P Number: "+ model.getStudentPnumber() + "\n" +
+						"Email: " 	+ model.getStudentEmail() + "\n" +
+						"Date: " 	+ model.getSubmissionDate().getDayOfMonth() + "/"
+									+ model.getSubmissionDate().getMonth().getValue() + "/"
+									+ model.getSubmissionDate().getYear() + "\n" +
+						"Course: " 	+ model.getStudentCourse().getCourseName()
+				);
+				view.closeSelectModules(false);
 				for (Module module : model.getStudentCourse().getAllModulesOnCourse()) {
 					if (model.isSelected(module)) {
 						switch (module.getDelivery()) {
@@ -195,11 +227,12 @@ public class ModuleChooserController {
 			}
 
 			// Matching the credits with the new data
-			rmpt1.updateCredits(selectedModuleCredits(smsvbox.getTerm1Data()));
-			rmpt2.updateCredits(selectedModuleCredits(smsvbox.getTerm2Data()));
+			smuvbox.updateCredits(selectedModuleCredits(smsvbox.getTerm1Data()));
+			smsvbox.updateCredits(selectedModuleCredits(smsvbox.getTerm2Data()));
 
 			// Placing new data into ReserveModulesPane (if new data exists else it remains empty)
 			if (selectedModuleCredits(smsvbox.getTerm1Data()) + selectedModuleCredits(smsvbox.getTerm2Data()) == 120) {
+				view.closeReserveModules(false);
 				for (Module module : model.getStudentCourse().getAllModulesOnCourse()) {
 					if (model.isSelected(module)) continue;
 
@@ -233,7 +266,7 @@ public class ModuleChooserController {
 	private class aboutMenuHandler implements EventHandler<ActionEvent> {
 		@Override
 		public void handle(ActionEvent event) {
-			alertDialogBuilder(Alert.AlertType.INFORMATION, "Module Chooser", "", "Module Chooser v1.11 \nCreated by Oscar");
+			alertDialogBuilder(Alert.AlertType.INFORMATION, "Module Chooser", "Module Chooser v1.11 \nCreated by Oscar");
 		}
 	}
 
@@ -241,6 +274,7 @@ public class ModuleChooserController {
 	private class CreateStudentProfileHandler implements EventHandler<ActionEvent> {
 		public void handle(ActionEvent e) {
 			// Adding data to model
+			view.closeSelectModules(false);
 			model.setStudentCourse(cspp.getSelectedCourse());
 			model.setStudentPnumber(cspp.getStudentPnumber());
 			model.setStudentName(cspp.getStudentName());
@@ -254,15 +288,16 @@ public class ModuleChooserController {
 
 			// Update Overview pane with new data
 			osp.setProfile(
-					"Name: " + model.getStudentName().getFullName() + "\n" +
-					"P Number: " + model.getStudentPnumber() + "\n" +
-					"Email: " + model.getStudentEmail() + "\n" +
+					"Name: " 	+ model.getStudentName().getFullName() + "\n" +
+					"P Number: "+ model.getStudentPnumber() + "\n" +
+					"Email: " 	+ model.getStudentEmail() + "\n" +
 					"Date: " 	+ model.getSubmissionDate().getDayOfMonth() + "/"
 								+ model.getSubmissionDate().getMonth().getValue() + "/"
 								+ model.getSubmissionDate().getYear() + "\n" +
-					"Course: " + model.getStudentCourse().getCourseName());
+					"Course: " 	+ model.getStudentCourse().getCourseName());
 
 			// Change tab
+
 			view.changeTab(1);
 		}
 	}
@@ -300,6 +335,7 @@ public class ModuleChooserController {
 			// check if data is already in ReserveModulesPane
 			if (!rmpt1.getUnselected().isEmpty()) {
 				rmpt1.clearAll(); rmpt2.clearAll();
+				view.closeReserveModules(true);
 			}
 			// check if data is already in OverviewSelectionPane
 			if (!osp.getSelected().equals("Selected modules will appear here")) {
@@ -319,6 +355,7 @@ public class ModuleChooserController {
 			// check if data is already in ReserveModulesPane
 			if (!rmpt2.getUnselected().isEmpty()) {
 				rmpt1.clearAll(); rmpt2.clearAll();
+				view.closeReserveModules(true);
 			}
 			// check if data is already in OverviewSelectionPane
 			if (!osp.getSelected().equals("Selected modules will appear here")) {
@@ -341,6 +378,7 @@ public class ModuleChooserController {
 		@Override
 		public void handle(ActionEvent event) {
 			// Updates all user input data into model
+			view.closeReserveModules(false);
 			forModelData(smsvbox.getYearData());
 			forModelData(smsvbox.getTerm1Data());
 			forModelData(smsvbox.getTerm2Data());
@@ -448,7 +486,69 @@ public class ModuleChooserController {
 	private class saveBtnHandler implements EventHandler<ActionEvent> {
 		@Override
 		public void handle(ActionEvent event) {
-			//TODO THIS BUTTON
+			FileChooser fileChooser = new FileChooser();
+			File file = fileChooser.showSaveDialog(null);
+			if (file != null) {
+				try {
+					Files.write(file.toPath(), Collections.singleton(
+							osp.getProfile() + " \n\n" +
+							osp.getSelected() +
+							osp.getReserved()
+					));
+				} catch (IOException e1) {
+					alertDialogBuilder(Alert.AlertType.WARNING, "Error occured", "Unexpected Error occurred");
+				}
+			}
+		}
+	}
+
+	private class StudentProfileChangedListener implements ChangeListener<String> {
+		@Override
+		public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+			if (!newValue.equals(oldValue)) {
+				checkForExistingData();
+			}
+		}
+	}
+	private class StudentDateChangedListener implements ChangeListener<LocalDate> {
+		@Override
+		public void changed(ObservableValue<? extends LocalDate> observable, LocalDate oldValue, LocalDate newValue) {
+			if (!newValue.equals(oldValue)) {
+				checkForExistingData();
+			}
+		}
+	}
+	private class StudentCourseChangedListener implements ChangeListener<Course> {
+		@Override
+		public void changed(ObservableValue<? extends Course> observable, Course oldValue, Course newValue) {
+			if (!newValue.equals(oldValue)) {
+				checkForExistingData();
+			}
+		}
+	}
+
+	private void checkForExistingData() {
+		if (!smsvbox.getYearData().isEmpty()) {
+			Alert confirmAction = new Alert(
+					Alert.AlertType.CONFIRMATION,
+					"You are about to delete module data\nfor " + model.getStudentName().getFullName(),
+					ButtonType.OK, ButtonType.CANCEL);
+			confirmAction.showAndWait();
+
+			if (confirmAction.getResult() == ButtonType.CANCEL) {
+				cspp.setData(
+						model.getStudentCourse(),
+						model.getStudentPnumber(),
+						model.getStudentName().getFirstName(),
+						model.getStudentName().getFamilyName(),
+						model.getStudentEmail(),
+						model.getSubmissionDate()
+				);
+			} else if (confirmAction.getResult() == ButtonType.OK) {
+				view.closeSelectModules(true);
+				view.closeReserveModules(true);
+				clearEverything();
+			}
 		}
 	}
 
@@ -615,10 +715,10 @@ public class ModuleChooserController {
 	}
 
 	//helper method to build dialogs
-	private void alertDialogBuilder(Alert.AlertType type, String title, String header, String content) {
+	private void alertDialogBuilder(Alert.AlertType type, String title, String content) {
 		Alert alert = new Alert(type);
 		alert.setTitle(title);
-		alert.setHeaderText(header);
+		alert.setHeaderText("");
 		alert.setContentText(content);
 		alert.showAndWait();
 	}
