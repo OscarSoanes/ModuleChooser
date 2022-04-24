@@ -1,5 +1,21 @@
 package controller;
 
+import static model.Schedule.TERM_1;
+import static model.Schedule.TERM_2;
+import static model.Schedule.YEAR_LONG;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
 import javafx.beans.binding.StringExpression;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -9,16 +25,20 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.stage.FileChooser;
-import model.*;
+import model.Course;
 import model.Module;
-import view.*;
-
-import java.io.*;
-import java.nio.file.Files;
-import java.time.LocalDate;
-import java.util.*;
-
-import static model.Schedule.*;
+import model.Schedule;
+import model.StudentProfile;
+import view.CreateStudentProfilePane;
+import view.ModuleChooserMenuBar;
+import view.ModuleChooserRootPane;
+import view.OverviewSelectionPane;
+import view.ReserveModulesPane;
+import view.ReserveModulesTerm1Pane;
+import view.ReserveModulesTerm2Pane;
+import view.SelectModulesPane;
+import view.SelectModulesSelectedVBox;
+import view.SelectModulesUnselectedVBox;
 
 public class ModuleChooserController {
 
@@ -97,7 +117,6 @@ public class ModuleChooserController {
 	}
 
 	public void attachBindings() {
-		cspp.disableCreateProfileBtn(cspp.isCreateStudentEmpty());
 		smuvbox.disableBtnAddTerm1(smuvbox.isNotSelectedOrFullTerm1());
 		smuvbox.disableBtnAddTerm2(StringExpression.stringExpression(
 				smsvbox.getCreditsProperty()).isEqualTo("60")
@@ -199,7 +218,7 @@ public class ModuleChooserController {
 			);
 
 			// Placing new data into SelectModulesPane
-			if (!cspp.isAnyNull()) {
+			if (validator().isEmpty()) {
 				osp.setProfile(
 						"Name: " 	+ model.getStudentName().getFullName() + "\n" +
 						"P Number: "+ model.getStudentPnumber() + "\n" +
@@ -224,6 +243,9 @@ public class ModuleChooserController {
 						}
 					}
 				}
+			} else {
+				cspp.setErrorMessage(validator());
+				return;
 			}
 
 			// Matching the credits with the new data
@@ -240,11 +262,13 @@ public class ModuleChooserController {
 						switch (module.getDelivery()) {
 							case TERM_1: rmpt1.addReserved(module); break;
 							case TERM_2: rmpt2.addReserved(module); break;
+							default: break;
 						}
 					} else {
 						switch (module.getDelivery()) {
 							case TERM_1: rmpt1.addUnselected(module); break;
 							case TERM_2: rmpt2.addUnselected(module); break;
+							default: break;
 						}
 					}
 				}
@@ -273,6 +297,15 @@ public class ModuleChooserController {
 	// event handlers for both CreateStudentProfilePane & SelectModulesPane
 	private class CreateStudentProfileHandler implements EventHandler<ActionEvent> {
 		public void handle(ActionEvent e) {
+			// checking validation via rules defined in validator()
+			cspp.clearError();
+			cspp.setErrorMessage(validator());
+
+
+			if (!validator().isEmpty()) {
+				return;
+			}
+
 			// Adding data to model
 			view.closeSelectModules(false);
 			model.setStudentCourse(cspp.getSelectedCourse());
@@ -709,9 +742,45 @@ public class ModuleChooserController {
 			switch (module.getDelivery()) {
 				case TERM_1: overviewData.append("Term 1\n\n"); break;
 				case TERM_2: overviewData.append("Term 2\n\n"); break;
+				default: break;
 			}
 		}
 		osp.setReserved(overviewData.toString());
+	}
+
+
+	// validates data in create student profile pane
+	public String validator() {
+		String errorsOccured = "";
+		
+		// validating name
+		if (!cspp.getStudentName().getFullName().matches("^[a-zA-Z\\s]+")) {
+			cspp.setFirstNameError("red");
+			cspp.setFamilyNameError("red");
+			errorsOccured += "Name is invalid format\n";
+		} else {
+			// checking for null values
+			if (cspp.getStudentName().getFirstName().isEmpty()) {
+				cspp.setFirstNameError("red");
+				errorsOccured += "First name is empty\n";
+			}
+			if (cspp.getStudentName().getFamilyName().isEmpty()) {
+				cspp.setFamilyNameError("red");
+				errorsOccured += "Family name is empty\n";
+			}
+		}
+		// validating email
+		if (!cspp.getStudentEmail().matches("^(.+)@(.+)$")) {
+			cspp.setEmailError("red");
+			errorsOccured += "Email is invalid format\n";
+		}
+		// validating pnumber
+		if (!cspp.getStudentPnumber().matches("[p P][0-9][0-9][0-9][0-9][0-9]+")) {
+			cspp.setPNumberError("red");
+			errorsOccured += "Pnumber is invalid format\n";
+		}
+
+		return errorsOccured;
 	}
 
 	//helper method to build dialogs

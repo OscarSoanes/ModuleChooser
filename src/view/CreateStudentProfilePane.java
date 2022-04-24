@@ -11,6 +11,7 @@ import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -26,6 +27,9 @@ public class CreateStudentProfilePane extends GridPane {
 	private final DatePicker inputDate;
 	private final TextField txtFirstName, txtSurname,  txtPnumber, txtEmail;
 	private final Button btnCreateProfile;
+	
+	private final HBox lblErrorHBox;
+	private final Label lblErrors;
 
 	public CreateStudentProfilePane() {
 		//styling
@@ -45,7 +49,13 @@ public class CreateStudentProfilePane extends GridPane {
 		Label lblSurname = new Label("Input surname: ");
 		Label lblEmail = new Label("Input email: ");
 		Label lblDate = new Label("Input date: ");
-		
+	
+		lblErrors = new Label("");
+		lblErrors.setStyle("-fx-text-fill: red; -fx-font-weight: bold");
+
+
+		lblErrorHBox = new HBox(lblErrors);
+		lblErrorHBox.setAlignment(Pos.CENTER);
 		//initialise combobox
 		cboCourses = new ComboBox<Course>(); //this is populated via method towards end of class
 		
@@ -57,6 +67,17 @@ public class CreateStudentProfilePane extends GridPane {
 		
 		inputDate = new DatePicker();
 		inputDate.setEditable(false);
+		inputDate.setValue(LocalDate.now());
+
+		// This is code from online to lock all future dates 
+		// source: https://stackoverflow.com/questions/62513192/javafx-datepicker-disable-future-dates
+		inputDate.setDayCellFactory(param -> new DateCell() {
+			@Override
+			public void updateItem(LocalDate date, boolean empty) {
+				super.updateItem(date, empty);
+				setDisable(empty || date.compareTo(LocalDate.now()) > 0 );
+			}
+		});
 
 		//initialise create profile button
 		btnCreateProfile = new Button("Create Profile");
@@ -82,6 +103,8 @@ public class CreateStudentProfilePane extends GridPane {
 			
 		this.add(new HBox(), 0, 6);
 		this.add(btnCreateProfile, 1, 6);
+
+		this.add(lblErrorHBox, 0, 7, 2, 1);
 	}
 	
 	//method to allow the controller to add courses to the combobox
@@ -129,6 +152,33 @@ public class CreateStudentProfilePane extends GridPane {
 		inputDate.setValue(date);
 	}
 
+	public void setErrorMessage(String value) {
+		lblErrors.setText(value);
+	}
+
+	public void setPNumberError(String colour) {
+		txtPnumber.setStyle("-fx-border-color: " + colour);
+	}
+
+	public void setFirstNameError(String colour) {
+		txtFirstName.setStyle("-fx-border-color: " + colour);
+	}
+	
+	public void setFamilyNameError(String colour) {
+		txtSurname.setStyle("-fx-border-color: " + colour);
+	}
+
+	public void setEmailError(String colour) {
+		txtEmail.setStyle("-fx-border-color: " + colour);
+	}
+
+	public void clearError() {
+		setPNumberError("transparent");
+		setFirstNameError("transparent");
+		setFamilyNameError("transparent");
+		setEmailError("transparent");
+	}
+
 	public boolean isAnyNull() {
 		return  txtPnumber.getText().isEmpty() || txtFirstName.getText().isEmpty() ||
 				txtSurname.getText().isEmpty() || txtEmail.getText().isEmpty() ||
@@ -156,16 +206,4 @@ public class CreateStudentProfilePane extends GridPane {
 	public void studentDateChangedListener(ChangeListener<LocalDate> listener) {
 		inputDate.valueProperty().addListener(listener);
 	}
-
-	// validation
-	public void disableCreateProfileBtn(BooleanBinding value) {
-		btnCreateProfile.disableProperty().bind(value);
-	}
-
-	public BooleanBinding isCreateStudentEmpty() {
-		return txtPnumber.textProperty().isEmpty().or(txtFirstName.textProperty().isEmpty()
-				.or(txtSurname.textProperty().isEmpty().or(txtEmail.textProperty().isEmpty()
-						.or(inputDate.valueProperty().isNull()))));
-	}
-
 }
