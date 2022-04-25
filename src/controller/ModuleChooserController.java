@@ -26,6 +26,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import model.Course;
@@ -294,7 +295,7 @@ public class ModuleChooserController {
 	private class aboutMenuHandler implements EventHandler<ActionEvent> {
 		@Override
 		public void handle(ActionEvent event) {
-			alertDialogBuilder(Alert.AlertType.INFORMATION, "Module Chooser", "Module Chooser v1.15 | Last update 25/04/2022\n\nA program that allows you select and reserve your modules from a selection of modules, ensuring it follows with De Montfort University's format\n\nPlease report any bugs or issues on https://github.com/OscarSoanes/ModuleChooser");
+			alertDialogBuilder(Alert.AlertType.INFORMATION, "Module Chooser", "Module Chooser v1.16 | Last update 25/04/2022\n\nA program that allows you select and reserve your modules from a selection of modules, ensuring it follows with De Montfort University's format\n\nPlease report any bugs or issues on https://github.com/OscarSoanes/ModuleChooser");
 		}
 	}
 
@@ -621,7 +622,6 @@ public class ModuleChooserController {
 			while (in.hasNextLine()) {
 				line = in.nextLine();
 
-				System.out.println(line);
 
 				arr = line.split(",");
 				compSci.addModuleToCourse(new Module(arr[0].replace(" ", ""), arr[1], Integer.parseInt(arr[2].replace(" ", "")), Boolean.parseBoolean(arr[3].replace(" ", "")), Schedule.valueOf(arr[4].replace(" ", ""))));
@@ -630,7 +630,7 @@ public class ModuleChooserController {
 			in.close(); 
 
 		} catch (FileNotFoundException fnfe) {
-			System.out.println(fnfe);
+			alertDialogBuilder(AlertType.ERROR, "Error occured", "Warning file not found for computer science");
 		}
 		
 		// Dynamically scanning data from softwareEngineeringCourses.txt
@@ -644,8 +644,6 @@ public class ModuleChooserController {
 			while (in.hasNextLine()) {
 				line = in.nextLine();
 
-				System.out.println(line);
-
 				arr = line.split(",");
 				softEng.addModuleToCourse(new Module(arr[0].replace(" ", ""), arr[1], Integer.parseInt(arr[2].replace(" ", "")), Boolean.parseBoolean(arr[3].replace(" ", "")), Schedule.valueOf(arr[4].replace(" ", ""))));
 			}
@@ -653,7 +651,7 @@ public class ModuleChooserController {
 			in.close(); 
 
 		} catch (FileNotFoundException fnfe) {
-			System.out.println(fnfe);
+			alertDialogBuilder(AlertType.ERROR, "Error occured", "Warning file not found for software engineering");
 		}
 
 		Course[] courses = new Course[2];
