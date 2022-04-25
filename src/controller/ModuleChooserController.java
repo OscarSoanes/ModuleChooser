@@ -26,6 +26,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import model.Course;
 import model.Module;
@@ -293,7 +294,7 @@ public class ModuleChooserController {
 	private class aboutMenuHandler implements EventHandler<ActionEvent> {
 		@Override
 		public void handle(ActionEvent event) {
-			alertDialogBuilder(Alert.AlertType.INFORMATION, "Module Chooser", "Module Chooser v1.11 \nCreated by Oscar");
+			alertDialogBuilder(Alert.AlertType.INFORMATION, "Module Chooser", "Module Chooser v1.15 | Last update 25/04/2022\n\nA program that allows you select and reserve your modules from a selection of modules, ensuring it follows with De Montfort University's format\n\nPlease report any bugs or issues on https://github.com/OscarSoanes/ModuleChooser");
 		}
 	}
 
@@ -803,6 +804,8 @@ public class ModuleChooserController {
 		alert.setTitle(title);
 		alert.setHeaderText("");
 		alert.setContentText(content);
+		
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		alert.showAndWait();
 	}
 }
