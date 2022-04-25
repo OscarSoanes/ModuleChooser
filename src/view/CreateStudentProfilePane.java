@@ -1,9 +1,7 @@
 package view;
 
 import java.time.LocalDate;
-import java.util.Objects;
 
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;

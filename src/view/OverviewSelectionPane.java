@@ -2,7 +2,6 @@ package view;
 
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.StringExpression;
-import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;

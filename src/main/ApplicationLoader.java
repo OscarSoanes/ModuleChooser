@@ -18,6 +18,7 @@ public class ApplicationLoader extends Application {
 		view = new ModuleChooserRootPane();
 		StudentProfile model = new StudentProfile();
 		new ModuleChooserController(view, model);	
+		
 	}
 	
 	@Override

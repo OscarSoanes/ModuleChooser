@@ -13,7 +13,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.RowConstraints;
 import javafx.event.EventHandler;
 import model.Module;
 
@@ -25,7 +26,7 @@ public class ReserveModulesTerm1Pane extends GridPane {
 
     public ReserveModulesTerm1Pane() {
         // styling
-        this.setPadding(new Insets(20));
+        this.setPadding(new Insets(20, 20, 0, 20));
         this.setHgap(20);
         this.setAlignment(Pos.TOP_LEFT);
 
@@ -35,6 +36,13 @@ public class ReserveModulesTerm1Pane extends GridPane {
         ColumnConstraints reservedColumn = new ColumnConstraints();
         reservedColumn.setPercentWidth(50);
         this.getColumnConstraints().addAll(unselectedColumn, reservedColumn);
+
+        RowConstraints row1 = new RowConstraints();
+        row1.setMaxHeight(200);
+        RowConstraints rowConstraints = new RowConstraints();
+        rowConstraints.setFillHeight(true);
+        rowConstraints.setVgrow(Priority.ALWAYS);
+        this.getRowConstraints().addAll(row1, rowConstraints);
 
         // Creating labels
         Label lblUnselected = new Label("Unselected Term 1 modules");
