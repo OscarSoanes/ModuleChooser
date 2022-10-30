@@ -1,5 +1,5 @@
 # Module Chooser
-JavaFX Coursework
+JavaFX work for university \
 This is a module chooser to select which modules a student wants for their third year. This contains the ability to have dynamic loading and saving for each module.
 
 **If you are a student please do not use my code for your assignments, as you will be marked for cheating by copying my code!**
